@@ -157,7 +157,8 @@ static void BOARD_I2C_Recovery(void)
 
     if ((RGPIO_PinRead(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN) & 0x1U) == 0U)
     {
-        printf("BOARD_I2C_INSTANCE: SDA is low, start I2C recovery.\r\n");
+        printf("I2C%u: SDA is low, start I2C recovery.\r\n",
+            BOARD_I2C_INSTANCE);
 
         RGPIO_PinInit(BOARD_I2C_RGPIO, BOARD_I2C_SCL_RGPIO_PIN,
             &output_config);
@@ -196,11 +197,13 @@ static void BOARD_I2C_Recovery(void)
         if ((RGPIO_PinRead(BOARD_I2C_RGPIO, BOARD_I2C_SDA_RGPIO_PIN) & 0x1U)
             == 1U)
         {
-            printf("BOARD_I2C_INSTANCE: I2C recovery success.\r\n");
+            printf("I2C%u: I2C recovery success.\r\n",
+                BOARD_I2C_INSTANCE);
         }
         else
         {
-            printf("BOARD_I2C_INSTANCE Recovery failed, SDA still low!\r\n");
+            printf("I2C%u: Recovery failed, SDA still low!\r\n",
+                BOARD_I2C_INSTANCE);
         }
     }
 
