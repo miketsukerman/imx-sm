@@ -10,10 +10,10 @@
 #define SM_CONFIG_VER 2U
 
 #define SM_BRANCH copilot/port-aom5521-changes-to-imx-sm
-#define SM_BUILD 3UL
-#define SM_COMMIT 0xaadcec6eUL
+#define SM_BUILD 4UL
+#define SM_COMMIT 0xaa370662UL
 #define SM_DATE "Jul 15 2026"
-#define SM_TIME "15:57:01"
+#define SM_TIME "15:58:10"
 
 #define SM_MKIMAGE_BRANCH "lf-6.12.34_2.1.0"
 #define SM_MKIMAGE_BUILD "Linux_IMX_6.12.34_2.1.0_RC2"
