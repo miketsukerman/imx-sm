@@ -1319,7 +1319,7 @@ LOAD /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtn.o
  *(.resource_table)
                 0x1ffc0800                        . = ALIGN (0x8)
 
-.text           0x1ffc0800    0x29d08
+.text           0x1ffc0800    0x29d00
                 0x1ffc0800                        . = ALIGN (0x4)
  *(.text)
  .text          0x1ffc0800       0x8c /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
@@ -4454,285 +4454,285 @@ LOAD /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtn.o
  .rodata.s_trdcCamera
                 0x1ffe8578      0x238 ././build/mx95evk/dev_sm_rdc.o
  .rodata.s_trdcAon
-                0x1ffe87b0      0x5c4 ././build/mx95evk/dev_sm_rdc.o
+                0x1ffe87b0      0x5bc ././build/mx95evk/dev_sm_rdc.o
  .rodata.s_fuseId.0
-                0x1ffe8d74       0x24 ././build/mx95evk/dev_sm_fuse.o
+                0x1ffe8d6c       0x24 ././build/mx95evk/dev_sm_fuse.o
  .rodata.s_fuseId.1
-                0x1ffe8d98       0x5c ././build/mx95evk/dev_sm_fuse.o
+                0x1ffe8d90       0x5c ././build/mx95evk/dev_sm_fuse.o
  .rodata.eMcem_DdrcBaseAddress
-                0x1ffe8df4        0x4 ././build/mx95evk/eMcem_DdrcChannels_MIMX9.o
-                0x1ffe8df4                eMcem_DdrcBaseAddress
+                0x1ffe8dec        0x4 ././build/mx95evk/eMcem_DdrcChannels_MIMX9.o
+                0x1ffe8dec                eMcem_DdrcBaseAddress
  .rodata.eMcem_u32DdrcBaseAddress
-                0x1ffe8df8        0x4 ././build/mx95evk/eMcem_DdrcChannels_MIMX9.o
-                0x1ffe8df8                eMcem_u32DdrcBaseAddress
+                0x1ffe8df0        0x4 ././build/mx95evk/eMcem_DdrcChannels_MIMX9.o
+                0x1ffe8df0                eMcem_u32DdrcBaseAddress
  .rodata.eMcem_Eim_arrDescriptors
-                0x1ffe8dfc      0x1f4 ././build/mx95evk/eMcem_EimChannels_MIMX95XX.o
-                0x1ffe8dfc                eMcem_Eim_arrDescriptors
+                0x1ffe8df4      0x1f4 ././build/mx95evk/eMcem_EimChannels_MIMX95XX.o
+                0x1ffe8df4                eMcem_Eim_arrDescriptors
  .rodata.au8EimChannelsPerInstance
-                0x1ffe8ff0        0x5 ././build/mx95evk/eMcem_EimChannels_MIMX95XX.o
-                0x1ffe8ff0                au8EimChannelsPerInstance
- *fill*         0x1ffe8ff5        0x3 
+                0x1ffe8fe8        0x5 ././build/mx95evk/eMcem_EimChannels_MIMX95XX.o
+                0x1ffe8fe8                au8EimChannelsPerInstance
+ *fill*         0x1ffe8fed        0x3 
  .rodata.au32InstanceBaseAddr
-                0x1ffe8ff8       0x10 ././build/mx95evk/eMcem_ErmChannels_MIMX95XX.o
-                0x1ffe8ff8                au32InstanceBaseAddr
+                0x1ffe8ff0       0x10 ././build/mx95evk/eMcem_ErmChannels_MIMX95XX.o
+                0x1ffe8ff0                au32InstanceBaseAddr
  .rodata.au8ChannelsPerInstance
-                0x1ffe9008        0x4 ././build/mx95evk/eMcem_ErmChannels_MIMX95XX.o
-                0x1ffe9008                au8ChannelsPerInstance
+                0x1ffe9000        0x4 ././build/mx95evk/eMcem_ErmChannels_MIMX95XX.o
+                0x1ffe9000                au8ChannelsPerInstance
  .rodata.eMcem_SramcBaseAddress
-                0x1ffe900c        0x4 ././build/mx95evk/eMcem_SramcChannels_MIMX9.o
-                0x1ffe900c                eMcem_SramcBaseAddress
+                0x1ffe9004        0x4 ././build/mx95evk/eMcem_SramcChannels_MIMX9.o
+                0x1ffe9004                eMcem_SramcBaseAddress
  .rodata.eMcem_u32SramcBaseAddress
-                0x1ffe9010        0x4 ././build/mx95evk/eMcem_SramcChannels_MIMX9.o
-                0x1ffe9010                eMcem_u32SramcBaseAddress
+                0x1ffe9008        0x4 ././build/mx95evk/eMcem_SramcChannels_MIMX9.o
+                0x1ffe9008                eMcem_u32SramcBaseAddress
  .rodata.eMcem_Config
-                0x1ffe9014       0x14 ././build/mx95evk/eMcem_Cfg.o
-                0x1ffe9014                eMcem_Config
+                0x1ffe900c       0x14 ././build/mx95evk/eMcem_Cfg.o
+                0x1ffe900c                eMcem_Config
  .rodata.CVfccuCfg
-                0x1ffe9028      0x20c ././build/mx95evk/eMcem_Cfg.o
-                0x1ffe9028                CVfccuCfg
+                0x1ffe9020      0x20c ././build/mx95evk/eMcem_Cfg.o
+                0x1ffe9020                CVfccuCfg
  .rodata.eMcem_au32StaticFaultMasks
-                0x1ffe9234       0x10 ././build/mx95evk/eMcem_Cfg.o
-                0x1ffe9234                eMcem_au32StaticFaultMasks
+                0x1ffe922c       0x10 ././build/mx95evk/eMcem_Cfg.o
+                0x1ffe922c                eMcem_au32StaticFaultMasks
  .rodata.s_uartConfig
-                0x1ffe9244       0x18 ././build/mx95evk/board.o
+                0x1ffe923c       0x18 ././build/mx95evk/board.o
  .rodata.BRD_SM_Exit.str1.4
-                0x1ffe925c       0x11 ././build/mx95evk/brd_sm.o
+                0x1ffe9254       0x11 ././build/mx95evk/brd_sm.o
  .rodata.BRD_SM_ResetRecordPrint.str1.4
-                0x1ffe925c       0x3a ././build/mx95evk/brd_sm.o
+                0x1ffe9254       0x3a ././build/mx95evk/brd_sm.o
  .rodata.BRD_SM_FaultReactionGet.str1.4
-                0x1ffe925c       0x5d ././build/mx95evk/brd_sm.o
+                0x1ffe9254       0x5d ././build/mx95evk/brd_sm.o
  .rodata.BRD_SM_ShutdownRecordSave.str1.4
-                0x1ffe925c       0x23 ././build/mx95evk/brd_sm.o
+                0x1ffe9254       0x23 ././build/mx95evk/brd_sm.o
  .rodata.str1.4
-                0x1ffe925c       0x2a ././build/mx95evk/brd_sm_sensor.o
+                0x1ffe9254       0x2a ././build/mx95evk/brd_sm_sensor.o
  .rodata.s_name.0
-                0x1ffe925c        0xc ././build/mx95evk/brd_sm_sensor.o
+                0x1ffe9254        0xc ././build/mx95evk/brd_sm_sensor.o
  .rodata.str1.4
-                0x1ffe9268       0x55 ././build/mx95evk/brd_sm_voltage.o
+                0x1ffe9260       0x55 ././build/mx95evk/brd_sm_voltage.o
  .rodata.s_name.0
-                0x1ffe9268       0x1c ././build/mx95evk/brd_sm_voltage.o
+                0x1ffe9260       0x1c ././build/mx95evk/brd_sm_voltage.o
  .rodata.BRD_SM_BbmRtcNameGet.str1.4
-                0x1ffe9284        0x8 ././build/mx95evk/brd_sm_bbm.o
+                0x1ffe927c        0x8 ././build/mx95evk/brd_sm_bbm.o
  .rodata.s_name.0
-                0x1ffe9284        0x4 ././build/mx95evk/brd_sm_bbm.o
+                0x1ffe927c        0x4 ././build/mx95evk/brd_sm_bbm.o
  .rodata.maskInfo
-                0x1ffe9288       0x18 ././build/mx95evk/fsl_pf09.o
+                0x1ffe9280       0x18 ././build/mx95evk/fsl_pf09.o
  .rodata.LMM_CfgInfoGet.str1.4
-                0x1ffe92a0        0x8 ././build/mx95evk/lmm.o
+                0x1ffe9298        0x8 ././build/mx95evk/lmm.o
  .rodata.str1.4
-                0x1ffe92a0        0xb ././build/mx95evk/lmm_config.o
+                0x1ffe9298        0xb ././build/mx95evk/lmm_config.o
  .rodata.g_lmmConfig
-                0x1ffe92a0       0x54 ././build/mx95evk/lmm_config.o
-                0x1ffe92a0                g_lmmConfig
- *fill*         0x1ffe92f4        0x4 
+                0x1ffe9298       0x54 ././build/mx95evk/lmm_config.o
+                0x1ffe9298                g_lmmConfig
+ *fill*         0x1ffe92ec        0x4 
  .rodata.s_lmmStop
-                0x1ffe92f8      0x318 ././build/mx95evk/lmm_sys.o
+                0x1ffe92f0      0x318 ././build/mx95evk/lmm_sys.o
  .rodata.s_lmmStart
-                0x1ffe9610      0x1b0 ././build/mx95evk/lmm_sys.o
+                0x1ffe9608      0x1b0 ././build/mx95evk/lmm_sys.o
  .rodata.g_swReason
-                0x1ffe97c0       0x28 ././build/mx95evk/lmm_sys.o
-                0x1ffe97c0                g_swReason
+                0x1ffe97b8       0x28 ././build/mx95evk/lmm_sys.o
+                0x1ffe97b8                g_swReason
  .rodata.s_lmmfault.0
-                0x1ffe97e8      0x240 ././build/mx95evk/lmm_fault.o
+                0x1ffe97e0      0x240 ././build/mx95evk/lmm_fault.o
  .rodata.s_muIrqs.0
-                0x1ffe9a28       0x44 ././build/mx95evk/mb_mu.o
+                0x1ffe9a20       0x44 ././build/mx95evk/mb_mu.o
  .rodata.s_muBases
-                0x1ffe9a6c       0x88 ././build/mx95evk/mb_mu.o
+                0x1ffe9a64       0x88 ././build/mx95evk/mb_mu.o
  .rodata.s_mbMuConfig
-                0x1ffe9af4       0x3c ././build/mx95evk/mb_mu.o
+                0x1ffe9aec       0x3c ././build/mx95evk/mb_mu.o
  .rodata.RPC_SCMI_ErrorDump.str1.4
-                0x1ffe9b30       0x45 ././build/mx95evk/rpc_scmi.o
+                0x1ffe9b28       0x45 ././build/mx95evk/rpc_scmi.o
  .rodata.s_protocolList
-                0x1ffe9b30        0xe ././build/mx95evk/rpc_scmi.o
+                0x1ffe9b28        0xe ././build/mx95evk/rpc_scmi.o
  .rodata.RPC_SCMI_BaseDispatchCommand.str1.4
-                0x1ffe9b3e       0x11 ././build/mx95evk/rpc_scmi_base.o
+                0x1ffe9b36       0x11 ././build/mx95evk/rpc_scmi_base.o
  .rodata.RPC_SCMI_BbmDispatchCommand.str1.4
-                0x1ffe9b3e        0x1 ././build/mx95evk/rpc_scmi_bbm.o
+                0x1ffe9b36        0x1 ././build/mx95evk/rpc_scmi_bbm.o
  .rodata.RPC_SCMI_ClockDispatchCommand.str1.4
-                0x1ffe9b3e        0x1 ././build/mx95evk/rpc_scmi_clock.o
- *fill*         0x1ffe9b3e        0x2 
+                0x1ffe9b36        0x1 ././build/mx95evk/rpc_scmi_clock.o
+ *fill*         0x1ffe9b36        0x2 
  .rodata.g_scmiConfig
-                0x1ffe9b40       0x10 ././build/mx95evk/rpc_scmi_config.o
-                0x1ffe9b40                g_scmiConfig
+                0x1ffe9b38       0x10 ././build/mx95evk/rpc_scmi_config.o
+                0x1ffe9b38                g_scmiConfig
  .rodata.str1.4
-                0x1ffe9b50       0x12 ././build/mx95evk/rpc_scmi_config.o
+                0x1ffe9b48       0x12 ././build/mx95evk/rpc_scmi_config.o
  .rodata.g_scmiAgentConfig
-                0x1ffe9b50      0x81c ././build/mx95evk/rpc_scmi_config.o
-                0x1ffe9b50                g_scmiAgentConfig
+                0x1ffe9b48      0x81c ././build/mx95evk/rpc_scmi_config.o
+                0x1ffe9b48                g_scmiAgentConfig
  .rodata.g_scmiChannelConfig
-                0x1ffea36c       0x23 ././build/mx95evk/rpc_scmi_config.o
-                0x1ffea36c                g_scmiChannelConfig
+                0x1ffea364       0x23 ././build/mx95evk/rpc_scmi_config.o
+                0x1ffea364                g_scmiChannelConfig
  .rodata.RPC_SCMI_CpuDispatchCommand.str1.4
-                0x1ffea38f        0x1 ././build/mx95evk/rpc_scmi_cpu.o
+                0x1ffea387        0x1 ././build/mx95evk/rpc_scmi_cpu.o
  .rodata.RPC_SCMI_LmmDispatchCommand.str1.4
-                0x1ffea38f        0x1 ././build/mx95evk/rpc_scmi_lmm.o
+                0x1ffea387        0x1 ././build/mx95evk/rpc_scmi_lmm.o
  .rodata.RPC_SCMI_MiscDispatchCommand.str1.4
-                0x1ffea38f       0x27 ././build/mx95evk/rpc_scmi_misc.o
+                0x1ffea387       0x27 ././build/mx95evk/rpc_scmi_misc.o
  .rodata.RPC_SCMI_PerfDispatchCommand.str1.4
-                0x1ffea38f        0x1 ././build/mx95evk/rpc_scmi_perf.o
+                0x1ffea387        0x1 ././build/mx95evk/rpc_scmi_perf.o
  .rodata.RPC_SCMI_PinctrlDispatchCommand.str1.4
-                0x1ffea38f        0x1 ././build/mx95evk/rpc_scmi_pinctrl.o
+                0x1ffea387        0x1 ././build/mx95evk/rpc_scmi_pinctrl.o
  .rodata.RPC_SCMI_PowerDispatchCommand.str1.4
-                0x1ffea38f        0x1 ././build/mx95evk/rpc_scmi_power.o
+                0x1ffea387        0x1 ././build/mx95evk/rpc_scmi_power.o
  .rodata.RPC_SCMI_SensorDispatchCommand.str1.4
-                0x1ffea38f        0x1 ././build/mx95evk/rpc_scmi_sensor.o
+                0x1ffea387        0x1 ././build/mx95evk/rpc_scmi_sensor.o
  .rodata.RPC_SCMI_ResetDispatchCommand.str1.4
-                0x1ffea38f        0x1 ././build/mx95evk/rpc_scmi_reset.o
+                0x1ffea387        0x1 ././build/mx95evk/rpc_scmi_reset.o
  .rodata.RPC_SCMI_VoltageDispatchCommand.str1.4
-                0x1ffea38f        0x1 ././build/mx95evk/rpc_scmi_voltage.o
- *fill*         0x1ffea38f        0x1 
+                0x1ffea387        0x1 ././build/mx95evk/rpc_scmi_voltage.o
+ *fill*         0x1ffea387        0x1 
  .rodata.s_smtConfig
-                0x1ffea390       0x2a ././build/mx95evk/rpc_smt.o
+                0x1ffea388       0x2a ././build/mx95evk/rpc_smt.o
  .rodata._exit.str1.4
-                0x1ffea3ba        0x5 ././build/mx95evk/newlib_stubs.o
+                0x1ffea3b2        0x5 ././build/mx95evk/newlib_stubs.o
  .rodata._sbrk.str1.4
-                0x1ffea3ba       0x10 ././build/mx95evk/newlib_stubs.o
+                0x1ffea3b2       0x10 ././build/mx95evk/newlib_stubs.o
  .rodata.main.str1.4
-                0x1ffea3ba       0x8c ././build/mx95evk/sm.o
+                0x1ffea3b2       0x8c ././build/mx95evk/sm.o
  .rodata.MONITOR_Cmd.str1.4
-                0x1ffea3ba      0x13e ././build/mx95evk/monitor.o
+                0x1ffea3b2      0x13e ././build/mx95evk/monitor.o
  .rodata.MONITOR_CmdClock.str1.4
-                0x1ffea3ba       0xbd ././build/mx95evk/monitor_cmds.o
+                0x1ffea3b2       0xbd ././build/mx95evk/monitor_cmds.o
  .rodata.MONITOR_CmdExtCtrl.str1.4
-                0x1ffea3ba       0x14 ././build/mx95evk/monitor_cmds.o
+                0x1ffea3b2       0x14 ././build/mx95evk/monitor_cmds.o
  .rodata.MONITOR_CmdMd.str1.4
-                0x1ffea3ba       0x36 ././build/mx95evk/monitor_cmds.o
+                0x1ffea3b2       0x36 ././build/mx95evk/monitor_cmds.o
  .rodata.MONITOR_CmdFuse.str1.4
-                0x1ffea3ba       0x13 ././build/mx95evk/monitor_cmds.o
+                0x1ffea3b2       0x13 ././build/mx95evk/monitor_cmds.o
  .rodata.MONITOR_DumpLongHex.constprop.1.str1.4
-                0x1ffea3ba        0xe ././build/mx95evk/monitor_cmds.o
+                0x1ffea3b2        0xe ././build/mx95evk/monitor_cmds.o
  .rodata.MONITOR_CmdLm.str1.4
-                0x1ffea3ba       0x46 ././build/mx95evk/monitor_cmds.o
+                0x1ffea3b2       0x46 ././build/mx95evk/monitor_cmds.o
  .rodata.MONITOR_Dispatch.str1.4
-                0x1ffea3ba      0x6a3 ././build/mx95evk/monitor_cmds.o
- *fill*         0x1ffea3ba        0x2 
+                0x1ffea3b2      0x6a3 ././build/mx95evk/monitor_cmds.o
+ *fill*         0x1ffea3b2        0x2 
  .rodata.CSWTCH.394
-                0x1ffea3bc       0x10 ././build/mx95evk/monitor_cmds.o
+                0x1ffea3b4       0x10 ././build/mx95evk/monitor_cmds.o
  .rodata.str1.4
-                0x1ffea3cc      0x3c5 ././build/mx95evk/monitor_cmds.o
+                0x1ffea3c4      0x3c5 ././build/mx95evk/monitor_cmds.o
  .rodata.cmds.3
-                0x1ffea3cc       0x18 ././build/mx95evk/monitor_cmds.o
+                0x1ffea3c4       0x18 ././build/mx95evk/monitor_cmds.o
  .rodata.stageText.4
-                0x1ffea3e4       0x10 ././build/mx95evk/monitor_cmds.o
+                0x1ffea3dc       0x10 ././build/mx95evk/monitor_cmds.o
  .rodata.cmds.7
-                0x1ffea3f4       0xfc ././build/mx95evk/monitor_cmds.o
+                0x1ffea3ec       0xfc ././build/mx95evk/monitor_cmds.o
  .rodata.MONITOR_DisplayBlkCfg.str1.4
-                0x1ffea4f0       0x45 ././build/mx95evk/monitor_trdc.o
+                0x1ffea4e8       0x45 ././build/mx95evk/monitor_trdc.o
  .rodata.MONITOR_DisplayGlbac.str1.4
-                0x1ffea4f0       0x28 ././build/mx95evk/monitor_trdc.o
+                0x1ffea4e8       0x28 ././build/mx95evk/monitor_trdc.o
  .rodata.MONITOR_DisplayDErr.str1.4
-                0x1ffea4f0       0xb3 ././build/mx95evk/monitor_trdc.o
+                0x1ffea4e8       0xb3 ././build/mx95evk/monitor_trdc.o
  .rodata.MONITOR_CmdTrdc.str1.4
-                0x1ffea4f0      0x2f2 ././build/mx95evk/monitor_trdc.o
+                0x1ffea4e8      0x2f2 ././build/mx95evk/monitor_trdc.o
  .rodata.MONITOR_CmdTrdcRaw.str1.4
-                0x1ffea4f0       0x11 ././build/mx95evk/monitor_trdc.o
+                0x1ffea4e8       0x11 ././build/mx95evk/monitor_trdc.o
  .rodata.str1.4
-                0x1ffea4f0       0x20 ././build/mx95evk/monitor_trdc.o
+                0x1ffea4e8       0x20 ././build/mx95evk/monitor_trdc.o
  .rodata.str1.4
-                0x1ffea4f0       0x43 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc_nano.a(libc_a-assert.o)
+                0x1ffea4e8       0x43 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc_nano.a(libc_a-assert.o)
  .rodata.str1.4
-                0x1ffea4f0       0x13 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc_nano.a(libc_a-nano-vfprintf.o)
+                0x1ffea4e8       0x13 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc_nano.a(libc_a-nano-vfprintf.o)
  .rodata.str1.4
-                0x1ffea4f0       0x25 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc_nano.a(libc_a-nano-vfprintf_i.o)
+                0x1ffea4e8       0x25 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc_nano.a(libc_a-nano-vfprintf_i.o)
  *(.glue_7)
- .glue_7        0x1ffea4f0        0x0 linker stubs
+ .glue_7        0x1ffea4e8        0x0 linker stubs
  *(.glue_7t)
- .glue_7t       0x1ffea4f0        0x0 linker stubs
+ .glue_7t       0x1ffea4e8        0x0 linker stubs
  *(.eh_frame)
- .eh_frame      0x1ffea4f0        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
+ .eh_frame      0x1ffea4e8        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
  *(.init)
- .init          0x1ffea4f0        0x4 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crti.o
-                0x1ffea4f0                _init
- .init          0x1ffea4f4        0x8 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtn.o
+ .init          0x1ffea4e8        0x4 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crti.o
+                0x1ffea4e8                _init
+ .init          0x1ffea4ec        0x8 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtn.o
  *(.fini)
- .fini          0x1ffea4fc        0x4 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crti.o
-                0x1ffea4fc                _fini
- .fini          0x1ffea500        0x8 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtn.o
-                0x1ffea7e4                        . = ALIGN (0x4)
+ .fini          0x1ffea4f4        0x4 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crti.o
+                0x1ffea4f4                _fini
+ .fini          0x1ffea4f8        0x8 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtn.o
+                0x1ffea7dc                        . = ALIGN (0x4)
 
-.vfp11_veneer   0x1ffea508        0x0
- .vfp11_veneer  0x1ffea508        0x0 linker stubs
+.vfp11_veneer   0x1ffea500        0x0
+ .vfp11_veneer  0x1ffea500        0x0 linker stubs
 
-.v4_bx          0x1ffea508        0x0
- .v4_bx         0x1ffea508        0x0 linker stubs
+.v4_bx          0x1ffea500        0x0
+ .v4_bx         0x1ffea500        0x0 linker stubs
 
-.iplt           0x1ffea508        0x0
- .iplt          0x1ffea508        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
+.iplt           0x1ffea500        0x0
+ .iplt          0x1ffea500        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
 
 CodeQuickAccess
-                0x1ffea508       0xec
+                0x1ffea500       0xec
  CodeQuickAccess
-                0x1ffea508       0xec ././build/mx95evk/fsl_wdog32.o
-                0x1ffea508                WDOG32_Unlock
-                0x1ffea528                WDOG32_Init
-                0x1ffea5b0                WDOG32_Enable
-                0x1ffea5bc                WDOG32_Disable
-                0x1ffea5c8                WDOG32_EnableInterrupts
-                0x1ffea5d0                WDOG32_DisableInterrupts
-                0x1ffea5dc                WDOG32_ClearStatusFlags
-                0x1ffea5ec                WDOG32_SetTimeoutValue
-                0x1ffea5f0                WDOG32_SetWindowValue
+                0x1ffea500       0xec ././build/mx95evk/fsl_wdog32.o
+                0x1ffea500                WDOG32_Unlock
+                0x1ffea520                WDOG32_Init
+                0x1ffea5a8                WDOG32_Enable
+                0x1ffea5b4                WDOG32_Disable
+                0x1ffea5c0                WDOG32_EnableInterrupts
+                0x1ffea5c8                WDOG32_DisableInterrupts
+                0x1ffea5d4                WDOG32_ClearStatusFlags
+                0x1ffea5e4                WDOG32_SetTimeoutValue
+                0x1ffea5e8                WDOG32_SetWindowValue
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
 
-.ARM            0x1ffea5f4        0x8
-                0x1ffea5f4                        __exidx_start = .
+.ARM            0x1ffea5ec        0x8
+                0x1ffea5ec                        __exidx_start = .
  *(.ARM.exidx*)
- .ARM.exidx     0x1ffea5f4        0x8 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/crt0.o
+ .ARM.exidx     0x1ffea5ec        0x8 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/crt0.o
                                  0x10 (size before relaxing)
- .ARM.exidx     0x1ffea5fc        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc_nano.a(libc_a-memcpy.o)
+ .ARM.exidx     0x1ffea5f4        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/v8-m.main+fp/softfp/libc_nano.a(libc_a-memcpy.o)
                                   0x8 (size before relaxing)
- .ARM.exidx     0x1ffea5fc        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/libgcc.a(_udivmoddi4.o)
+ .ARM.exidx     0x1ffea5f4        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/libgcc.a(_udivmoddi4.o)
                                   0x8 (size before relaxing)
-                0x1ffea5fc                        __exidx_end = .
+                0x1ffea5f4                        __exidx_end = .
 
-.rel.dyn        0x1ffea5fc        0x0
- .rel.iplt      0x1ffea5fc        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
+.rel.dyn        0x1ffea5f4        0x0
+ .rel.iplt      0x1ffea5f4        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
 
-.ctors          0x1ffea5fc        0x0
-                0x1ffea5fc                        __CTOR_LIST__ = .
+.ctors          0x1ffea5f4        0x0
+                0x1ffea5f4                        __CTOR_LIST__ = .
  *crtbegin.o(.ctors)
  *crtbegin?.o(.ctors)
  *(EXCLUDE_FILE(*crtend.o *crtend?.o) .ctors)
  *(SORT_BY_NAME(.ctors.*))
  *(.ctors)
-                0x1ffea5fc                        __CTOR_END__ = .
+                0x1ffea5f4                        __CTOR_END__ = .
 
-.gcov_info      0x1ffea5fc        0x0
+.gcov_info      0x1ffea5f4        0x0
                 [!provide]                        PROVIDE (__gcov_info_start = .)
  *(.gcov_info)
                 [!provide]                        PROVIDE (__gcov_info_end = .)
 
-.dtors          0x1ffea5fc        0x0
-                0x1ffea5fc                        __DTOR_LIST__ = .
+.dtors          0x1ffea5f4        0x0
+                0x1ffea5f4                        __DTOR_LIST__ = .
  *crtbegin.o(.dtors)
  *crtbegin?.o(.dtors)
  *(EXCLUDE_FILE(*crtend.o *crtend?.o) .dtors)
  *(SORT_BY_NAME(.dtors.*))
  *(.dtors)
-                0x1ffea5fc                        __DTOR_END__ = .
+                0x1ffea5f4                        __DTOR_END__ = .
 
-.preinit_array  0x1ffea5fc        0x0
-                0x1ffea5fc                        PROVIDE (__preinit_array_start = .)
+.preinit_array  0x1ffea5f4        0x0
+                0x1ffea5f4                        PROVIDE (__preinit_array_start = .)
  *(.preinit_array*)
-                0x1ffea5fc                        PROVIDE (__preinit_array_end = .)
+                0x1ffea5f4                        PROVIDE (__preinit_array_end = .)
 
-.init_array     0x1ffea5fc        0x4
-                0x1ffea5fc                        PROVIDE (__init_array_start = .)
+.init_array     0x1ffea5f4        0x4
+                0x1ffea5f4                        PROVIDE (__init_array_start = .)
  *(SORT_BY_NAME(.init_array.*))
  *(.init_array*)
- .init_array    0x1ffea5fc        0x4 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
-                0x1ffea600                        PROVIDE (__init_array_end = .)
+ .init_array    0x1ffea5f4        0x4 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
+                0x1ffea5f8                        PROVIDE (__init_array_end = .)
 
-.fini_array     0x1ffea600        0x4
-                0x1ffea600                        PROVIDE (__fini_array_start = .)
+.fini_array     0x1ffea5f8        0x4
+                0x1ffea5f8                        PROVIDE (__fini_array_start = .)
  *(SORT_BY_NAME(.fini_array.*))
  *(.fini_array*)
- .fini_array    0x1ffea600        0x4 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
-                0x1ffea604                        PROVIDE (__fini_array_end = .)
-                0x1ffea604                        __etext = .
-                0x1ffea604                        __DATA_ROM = .
+ .fini_array    0x1ffea5f8        0x4 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
+                0x1ffea5fc                        PROVIDE (__fini_array_end = .)
+                0x1ffea5fc                        __etext = .
+                0x1ffea5fc                        __DATA_ROM = .
 
 .interrupts_ram
                 0x2002a000        0x0
@@ -4746,7 +4746,7 @@ CodeQuickAccess
                 0x1ffc0000                        __VECTOR_RAM = DEFINED (__ram_vector_table__)?__VECTOR_RAM__:ORIGIN (m_interrupts)
                 0x00000000                        __RAM_VECTOR_TABLE_SIZE_BYTES = DEFINED (__ram_vector_table__)?(__interrupts_ram_end__ - __interrupts_ram_start__):0x0
 
-.data           0x2002a000      0x378 load address 0x1ffea604
+.data           0x2002a000      0x378 load address 0x1ffea5fc
                 0x2002a000                        . = ALIGN (0x4)
                 0x2002a000                        __DATA_RAM = .
                 0x2002a000                        __data_start__ = .
@@ -4800,21 +4800,21 @@ CodeQuickAccess
  *(.jcr*)
                 0x2002a378                        . = ALIGN (0x4)
                 0x2002a378                        __data_end__ = .
-                0x1ffea97c                        __DATA_END = (__DATA_ROM + (__data_end__ - __data_start__))
+                0x1ffea974                        __DATA_END = (__DATA_ROM + (__data_end__ - __data_start__))
                 0x2001a000                        text_end = (ORIGIN (m_text) + LENGTH (m_text))
                 0x00000001                        ASSERT ((__DATA_END <= text_end), region m_text overflowed with text and data)
 
 .tm_clone_table
-                0x2002a378        0x0 load address 0x1ffea97c
+                0x2002a378        0x0 load address 0x1ffea974
  .tm_clone_table
                 0x2002a378        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
  .tm_clone_table
                 0x2002a378        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtend.o
 
-.igot.plt       0x2002a378        0x0 load address 0x1ffea97c
+.igot.plt       0x2002a378        0x0 load address 0x1ffea974
  .igot.plt      0x2002a378        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/v8-m.main+fp/softfp/crtbegin.o
 
-.bss            0x2002a378     0x2768 load address 0x1ffea980
+.bss            0x2002a378     0x2768 load address 0x1ffea978
                 0x2002a378                        . = ALIGN (0x4)
                 0x2002a378                        __START_BSS = .
                 0x2002a378                        __bss_start__ = .
@@ -5187,7 +5187,7 @@ CodeQuickAccess
                 0x2002cae0                        __bss_end__ = .
                 0x2002cae0                        __END_BSS = .
 
-.heap           0x2002cae0     0x1000 load address 0x1ffed0e8
+.heap           0x2002cae0     0x1000 load address 0x1ffed0e0
                 0x2002cae0                        . = ALIGN (0x8)
                 0x2002cae0                        __end__ = .
                 [!provide]                        PROVIDE (end = .)
@@ -5197,7 +5197,7 @@ CodeQuickAccess
                 0x2002dae0                        __HeapLimit = .
                 0x2002dae0                        __heap_limit = .
 
-.stack          0x2002dae0     0x1000 load address 0x1ffee0e8
+.stack          0x2002dae0     0x1000 load address 0x1ffee0e0
                 0x2002dae0                        . = ALIGN (0x8)
                 0x2002eae0                        . = (. + STACK_SIZE)
  *fill*         0x2002dae0     0x1000 
