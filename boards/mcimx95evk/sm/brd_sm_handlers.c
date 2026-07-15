@@ -96,6 +96,12 @@ int32_t BRD_SM_SerialDevicesInit(void)
 {
     int32_t status = SM_ERR_SUCCESS;
     LPI2C_Type *const s_i2cBases[] = LPI2C_BASE_PTRS;
+
+#if 0
+    /* The PCAL6408A IO-expander is not populated on this board. The GPIO1
+       IRQ is wired directly to the PF09 and PCA2131 interrupt lines, so the
+       expander init is disabled and the IRQ handler dispatches the PMIC and
+       RTC handlers directly. */
     pcal6408a_config_t pcal6408Config;
 
     /* Fill in PCAL6408A dev */
@@ -116,6 +122,7 @@ int32_t BRD_SM_SerialDevicesInit(void)
             status = SM_ERR_HARDWARE_ERROR;
         }
     }
+#endif
 
     if (status == SM_ERR_SUCCESS)
     {
@@ -306,43 +313,24 @@ int32_t BRD_SM_BusExpMaskSet(uint8_t val, uint8_t mask)
 void GPIO1_0_IRQHandler(void)
 {
     uint32_t flags;
-    uint8_t status, val;
 
     /* Get GPIO status */
     flags = RGPIO_GetPinsInterruptFlags(GPIO1, kRGPIO_InterruptOutput0);
 
-    /* Get PCAL6408A status */
-    (void) PCAL6408A_IntStatusGet(&g_pcal6408aDev, &status);
-
-    /* Get value and Clear PCAL6408A interrupts */
-    (void) PCAL6408A_InputGet(&g_pcal6408aDev, &val);
-
     /* Clear GPIO interrupts */
     RGPIO_ClearPinsInterruptFlags(GPIO1, kRGPIO_InterruptOutput0, flags);
 
+    /* The PCAL6408A IO-expander is not used; the GPIO1 IRQ is shared by the
+       PF09 and PCA2131 interrupt lines, so dispatch both handlers directly. */
+
     /* Handle PF09 interrupt */
-    if ((status & BIT8(PCAL6408A_INPUT_PF09_INT)) != 0U)
-    {
-        /* Asserts low */
-        if ((val & BIT8(PCAL6408A_INPUT_PF09_INT)) == 0U)
-        {
-            BRD_SM_Pf09Handler();
-        }
-    }
+    BRD_SM_Pf09Handler();
 
     /* Handle PCA2131 interrupt */
-    if (g_pca2131Used && ((status & BIT8(PCAL6408A_INPUT_PCA2131_INT))
-        != 0U))
+    if (g_pca2131Used)
     {
-        /* Asserts low */
-        if ((val & BIT8(PCAL6408A_INPUT_PCA2131_INT)) == 0U)
-        {
-            BRD_SM_BbmHandler();
-        }
+        BRD_SM_BbmHandler();
     }
-
-    /* Handle controls interrupts */
-    BRD_SM_ControlHandler(status, val);
 
     /* Adjust dynamic IRQ priority */
     (void) DEV_SM_IrqPrioUpdate();
