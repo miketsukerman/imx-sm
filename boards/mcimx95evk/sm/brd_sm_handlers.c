@@ -43,6 +43,7 @@
 #include "dev_sm.h"
 #include "fsl_lpi2c.h"
 #include "fsl_rgpio.h"
+#include "pin_mux.h"
 
 /* Local defines */
 
@@ -57,6 +58,32 @@
 #define PCAL6408A_INPUT_PF53_SOC_PG  2U
 #define PCAL6408A_INPUT_PF09_INT     3U
 #define PCAL6408A_INPUT_PCA2131_INT  6U
+
+/* I2C bus recovery: SCL/SDA routed through GPIO1 for the SM I2C instance.
+   On i.MX95 the I2Cx_SCL/SDA pads map to GPIO1 (mux ALT5) as follows:
+     LPI2C1 -> GPIO1_IO0 (SCL) / GPIO1_IO1 (SDA)
+     LPI2C2 -> GPIO1_IO2 (SCL) / GPIO1_IO3 (SDA) */
+#if (BOARD_I2C_INSTANCE == 1U)
+#define BOARD_I2C_RGPIO_BASE        GPIO1
+#define BOARD_I2C_SCL_RGPIO_PIN     0U
+#define BOARD_I2C_SDA_RGPIO_PIN     1U
+#define BOARD_I2C_SCL_MUX_GPIO      IOMUXC_PAD_I2C1_SCL__GPIO1_IO_BIT0
+#define BOARD_I2C_SDA_MUX_GPIO      IOMUXC_PAD_I2C1_SDA__GPIO1_IO_BIT1
+#define BOARD_I2C_SCL_MUX_LPI2C     IOMUXC_PAD_I2C1_SCL__LPI2C1_SCL
+#define BOARD_I2C_SDA_MUX_LPI2C     IOMUXC_PAD_I2C1_SDA__LPI2C1_SDA
+#elif (BOARD_I2C_INSTANCE == 2U)
+#define BOARD_I2C_RGPIO_BASE        GPIO1
+#define BOARD_I2C_SCL_RGPIO_PIN     2U
+#define BOARD_I2C_SDA_RGPIO_PIN     3U
+#define BOARD_I2C_SCL_MUX_GPIO      IOMUXC_PAD_I2C2_SCL__GPIO1_IO_BIT2
+#define BOARD_I2C_SDA_MUX_GPIO      IOMUXC_PAD_I2C2_SDA__GPIO1_IO_BIT3
+#define BOARD_I2C_SCL_MUX_LPI2C     IOMUXC_PAD_I2C2_SCL__LPI2C2_SCL
+#define BOARD_I2C_SDA_MUX_LPI2C     IOMUXC_PAD_I2C2_SDA__LPI2C2_SDA
+#endif
+
+/* Half-clock period (us) used while bit-banging the recovery sequence
+   (~100 kHz, well within the 400 kHz LPI2C rate) */
+#define BOARD_I2C_RECOVERY_DELAY_US  5U
 
 /* Local types */
 
@@ -88,6 +115,7 @@ uint32_t g_pmicFaultFlags = 0U;
 /* Local functions */
 
 static void BRD_SM_Pf09Handler(void);
+static void BOARD_I2C_Recovery(void);
 
 /*--------------------------------------------------------------------------*/
 /* Init serial devices                                                      */
@@ -96,6 +124,10 @@ int32_t BRD_SM_SerialDevicesInit(void)
 {
     int32_t status = SM_ERR_SUCCESS;
     LPI2C_Type *const s_i2cBases[] = LPI2C_BASE_PTRS;
+
+    /* Recover the I2C bus in case a slave is holding it (stuck bus) before
+       attempting to communicate with the PMICs and RTC */
+    BOARD_I2C_Recovery();
 
 #if 0
     /* The PCAL6408A IO-expander is not populated on this board. The GPIO1
@@ -356,5 +388,81 @@ static void BRD_SM_Pf09Handler(void)
     {
         BRD_SM_SensorHandler();
     }
+}
+
+/*==========================================================================*/
+
+/*--------------------------------------------------------------------------*/
+/* Recover a stuck I2C bus                                                   */
+/*                                                                           */
+/* A slave device can hold SDA low (for example after a partial transfer    */
+/* interrupted by a reset), wedging the bus. This muxes SCL/SDA to GPIO,     */
+/* clocks up to 9 pulses to let the slave complete its byte and release     */
+/* SDA, drives a STOP condition, then restores the LPI2C pin muxing and      */
+/* re-initializes the master.                                               */
+/*--------------------------------------------------------------------------*/
+static void BOARD_I2C_Recovery(void)
+{
+    rgpio_pin_config_t sclConfig =
+    {
+        kRGPIO_DigitalOutput,
+        1U
+    };
+    rgpio_pin_config_t sdaInConfig =
+    {
+        kRGPIO_DigitalInput,
+        0U
+    };
+    rgpio_pin_config_t sdaOutConfig =
+    {
+        kRGPIO_DigitalOutput,
+        0U
+    };
+
+    /* Mux SCL/SDA as open-drain GPIO with pull-up */
+    IOMUXC_SetPinMux(BOARD_I2C_SCL_MUX_GPIO, 1U);
+    IOMUXC_SetPinConfig(BOARD_I2C_SCL_MUX_GPIO, IOMUXC_PAD_DSE(0xFU)
+        | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
+    IOMUXC_SetPinMux(BOARD_I2C_SDA_MUX_GPIO, 1U);
+    IOMUXC_SetPinConfig(BOARD_I2C_SDA_MUX_GPIO, IOMUXC_PAD_DSE(0xFU)
+        | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
+
+    /* SCL as output driven high, SDA as input */
+    RGPIO_PinInit(BOARD_I2C_RGPIO_BASE, BOARD_I2C_SCL_RGPIO_PIN, &sclConfig);
+    RGPIO_PinInit(BOARD_I2C_RGPIO_BASE, BOARD_I2C_SDA_RGPIO_PIN, &sdaInConfig);
+
+    /* Clock up to 9 pulses to let a stuck slave finish and release SDA */
+    for (uint32_t i = 0U; i < 9U; i++)
+    {
+        RGPIO_PinWrite(BOARD_I2C_RGPIO_BASE, BOARD_I2C_SCL_RGPIO_PIN, 0U);
+        SystemTimeDelay(BOARD_I2C_RECOVERY_DELAY_US);
+        RGPIO_PinWrite(BOARD_I2C_RGPIO_BASE, BOARD_I2C_SCL_RGPIO_PIN, 1U);
+        SystemTimeDelay(BOARD_I2C_RECOVERY_DELAY_US);
+
+        /* Slave released the bus? */
+        if (RGPIO_PinRead(BOARD_I2C_RGPIO_BASE, BOARD_I2C_SDA_RGPIO_PIN) != 0U)
+        {
+            break;
+        }
+    }
+
+    /* Generate a STOP condition: pull SDA low while SCL is high, then
+       release SDA (low-to-high transition on SDA with SCL high) */
+    RGPIO_PinInit(BOARD_I2C_RGPIO_BASE, BOARD_I2C_SDA_RGPIO_PIN, &sdaOutConfig);
+    RGPIO_PinWrite(BOARD_I2C_RGPIO_BASE, BOARD_I2C_SCL_RGPIO_PIN, 1U);
+    SystemTimeDelay(BOARD_I2C_RECOVERY_DELAY_US);
+    RGPIO_PinWrite(BOARD_I2C_RGPIO_BASE, BOARD_I2C_SDA_RGPIO_PIN, 1U);
+    SystemTimeDelay(BOARD_I2C_RECOVERY_DELAY_US);
+
+    /* Restore LPI2C pin muxing */
+    IOMUXC_SetPinMux(BOARD_I2C_SCL_MUX_LPI2C, 1U);
+    IOMUXC_SetPinConfig(BOARD_I2C_SCL_MUX_LPI2C, IOMUXC_PAD_DSE(0xFU)
+        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
+    IOMUXC_SetPinMux(BOARD_I2C_SDA_MUX_LPI2C, 1U);
+    IOMUXC_SetPinConfig(BOARD_I2C_SDA_MUX_LPI2C, IOMUXC_PAD_DSE(0xFU)
+        | IOMUXC_PAD_FSEL1(0x3U) | IOMUXC_PAD_PU(0x1U) | IOMUXC_PAD_OD(0x1U));
+
+    /* Re-initialize the LPI2C master */
+    BOARD_InitSerialBus();
 }
 
