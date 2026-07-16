@@ -684,7 +684,18 @@ void GPC_SM_REQ_IRQHandler(void)
     {
         (void) DEV_SM_PowerUpPost(lpHsMode.srcMixIdx);
         CPU_MixPowerUpNotify(lpHsMode.srcMixIdx);
+#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
+        if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+        {
+            PWR_LpHandshakeAckRevA();
+        }
+        else
+        {
+            PWR_LpHandshakeAck();
+        }
+#else
         PWR_LpHandshakeAck();
+#endif
         (void) DEV_SM_PowerUpAckComplete(lpHsMode.srcMixIdx);
     }
     /* Else powering down or asserting reset */
@@ -692,7 +703,18 @@ void GPC_SM_REQ_IRQHandler(void)
     {
         (void) DEV_SM_PowerDownPre(lpHsMode.srcMixIdx);
         CPU_MixPowerDownNotify(lpHsMode.srcMixIdx);
+#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
+        if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+        {
+            PWR_LpHandshakeAckRevA();
+        }
+        else
+        {
+            PWR_LpHandshakeAck();
+        }
+#else
         PWR_LpHandshakeAck();
+#endif
     }
 }
 
