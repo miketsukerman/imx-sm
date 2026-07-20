@@ -198,7 +198,8 @@ const eMcem_CVfccuInstanceCfgType CVfccuCfg =
         { /*!< Faults Enabled */
             (uint32)0xFFFC000BUL,
             (uint32)0x40000003UL,
-            (uint32)0x0000003FUL
+            /* Temporarily disable NOC_SSI (fault 66, bit 2): 0x3F -> 0x3B */
+            (uint32)0x0000003BUL
         },
         { /*!< Reaction Set ID's */
             (uint32)0x00000000UL,
