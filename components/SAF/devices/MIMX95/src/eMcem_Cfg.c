@@ -199,7 +199,8 @@ const eMcem_CVfccuInstanceCfgType CVfccuCfg =
             (uint32)0xFFFC000BUL,
             (uint32)0x40000003UL,
             /* Bit 4 (fault 68, DEV_SM_FAULT_DDR_SSI / DDRMIX SSI parity) intentionally masked; see SM-378 */
-            (uint32)0x0000002FUL
+            /* Bit 2 (fault 66, DEV_SM_FAULT_NOC_SSI / NOC SSI parity) temporarily masked; see SM-378 */
+            (uint32)0x0000002BUL
         },
         { /*!< Reaction Set ID's */
             (uint32)0x00000000UL,
