@@ -198,7 +198,10 @@ const eMcem_CVfccuInstanceCfgType CVfccuCfg =
         { /*!< Faults Enabled */
             (uint32)0xFFFC000BUL,
             (uint32)0x40000003UL,
-            (uint32)0x0000003FUL
+            /* word[2] bit N enables fault channel (64 + N), i.e. bit N = fault (N mod 32 within this word) */
+            /* Bit 4 (fault 68, DEV_SM_FAULT_DDR_SSI / DDRMIX SSI parity) intentionally masked; see SM-378 */
+            /* Bit 2 (fault 66, DEV_SM_FAULT_NOC_SSI / NOC SSI parity) temporarily masked; see SM-378 */
+            (uint32)0x0000002BUL
         },
         { /*!< Reaction Set ID's */
             (uint32)0x00000000UL,
