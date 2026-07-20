@@ -34,6 +34,9 @@
 #include "fsl_src.h"
 #include "fsl_clock.h"
 #include "sm_test_mode.h"
+#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
+#include "fsl_ccm.h"
+#endif
 
 /* Local Defines */
 
@@ -617,6 +620,41 @@ void PWR_LpHandshakeAck(void)
         BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_AUTOACK(0U) |
         BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_ACK(0U);
 }
+
+#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
+/*--------------------------------------------------------------------------*/
+/* Acknowledge LP handshake                                                 */
+/*--------------------------------------------------------------------------*/
+void PWR_LpHandshakeAckRevA(void)
+{
+    /* Query clock root divider for LP_HANDSHAKE module */
+    uint32_t oldDiv;
+    bool rc = CCM_RootGetDiv(CLOCK_ROOT_M33, &oldDiv);
+
+    /* Increase clock root divider for LP_HANDSHAKE module during ACK */
+    if (rc)
+    {
+        rc = CCM_RootSetDiv(CLOCK_ROOT_M33, oldDiv << 2U);
+    }
+
+    BLK_CTRL_S_AONMIX->SM_LP_HANDSHAKE_STATUS =
+        BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_AUTOACK(0U) |
+        BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_ACK(1U);
+
+    /* Ack requires a pulse of 2-3 clocks @ 24MHz = 125ns */
+    SystemTimeDelay(1U);
+
+    BLK_CTRL_S_AONMIX->SM_LP_HANDSHAKE_STATUS =
+        BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_AUTOACK(0U) |
+        BLK_CTRL_S_AONMIX_SM_LP_HANDSHAKE_STATUS_ACK(0U);
+
+    /* Restore clock root divider for LP_HANDSHAKE module */
+    if (rc)
+    {
+        (void) CCM_RootSetDiv(CLOCK_ROOT_M33, oldDiv);
+    }
+}
+#endif
 
 /*--------------------------------------------------------------------------*/
 /* Configure MIX-level transaction blocking                                 */

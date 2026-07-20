@@ -65,6 +65,7 @@ These are a mix of silicon errata workarounds and recommended usage changes.
 | [SM-357](https://jira.sw.nxp.com/projects/SM/issues/SM-357) | Misc. PMIC updates [[detail]](@ref RN_DETAIL_SM_357) |   | Y | Y | Y |
 | [SM-359](https://jira.sw.nxp.com/projects/SM/issues/SM-359) | Add optional code to bounce the BBSM supply on reset [[detail]](@ref RN_DETAIL_SM_359) |   | | | Y |
 | [SM-360](https://jira.sw.nxp.com/projects/SM/issues/SM-360) | Support PF53B PMIC on i.MX94 EVK [[detail]](@ref RN_DETAIL_SM_360) |   | | Y | |
+| [SM-361](https://jira.sw.nxp.com/projects/SM/issues/SM-361) | Restore i.MX95 A0/A1 (Rev A) silicon support [[detail]](@ref RN_DETAIL_SM_361) |   | Y | | |
 
 Documentation {#RN_CL_DOC}
 ------------
@@ -289,4 +290,9 @@ SM-360: Support PF53B PMIC on i.MX94 EVK {#RN_DETAIL_SM_360}
 ----------
 
 Modified board code to not modify LDO3 if PF53B is on the EVK. Customers should make the same changes to their board code.
+
+SM-361: Restore i.MX95 A0/A1 (Rev A) silicon support {#RN_DETAIL_SM_361}
+----------
+
+Restored i.MX95 A0/A1 (Rev A) silicon support in the MIMX95 device. All Rev A behavior is selected at runtime via DEV_SM_SiVerGet() < DEV_SM_SIVER_B0, so i.MX95 B0 behavior is unchanged. This re-adds the LP_HANDSHAKE_SM ERR052232 handshake-clock-sync workaround (PWR_LpHandshakeAckRevA), and the Rev A paths that skip SMMU TBU/TCU SW control, skip MIX-level transaction (SSI) blocking, use CCM_CgcSetEnable for CGC control, and use secure access when starting the ANA temperature sensor.
 

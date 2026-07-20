@@ -338,6 +338,13 @@ void PWR_LpHandshakeModeGet(pwr_lp_hs_mode *lpHsMode);
  */
 void PWR_LpHandshakeAck(void);
 
+#if (defined(FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232) && FSL_FEATURE_LP_HANDSHAKE_SM_HAS_ERRATA_52232)
+/*!
+ * Acknowledge LP handshake for Rev A silicon
+ */
+void PWR_LpHandshakeAckRevA(void);
+#endif
+
 /*!
  * Configure MIX-level transaction blocking.
  *

@@ -406,21 +406,25 @@ int32_t DEV_SM_NocConfigLoad(void)
     int32_t status;
     static const uint32_t s_configData[] = SM_NOC_CONFIG;
 
-    /* Deassert reset for WAKEUPMIX SMMU TBUs */
-    SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL &=
-        ~SRC_XSPR_IRST_REQ_CTRL_RSTR_0_IRST_1_MASK;
+    /* Rev A does not support SMMU TBU/TCU SW control  */
+    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
+    {
+        /* Deassert reset for WAKEUPMIX SMMU TBUs */
+        SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL &=
+            ~SRC_XSPR_IRST_REQ_CTRL_RSTR_0_IRST_1_MASK;
 
-    /* Resume NOCMIX SMMU TCU operation */
-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT |=
-        CCM_LPCG_DIRECT_ON_MASK;
+        /* Resume NOCMIX SMMU TCU operation */
+        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT |=
+            CCM_LPCG_DIRECT_ON_MASK;
 
-    /* Resume NOCMIX SMMU TBU operation */
-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT |=
-        CCM_LPCG_DIRECT_ON_MASK;
+        /* Resume NOCMIX SMMU TBU operation */
+        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT |=
+            CCM_LPCG_DIRECT_ON_MASK;
 
-    /* Resume WAKEUPMIX TBU operation */
-    CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT |=
-        CCM_LPCG_DIRECT_ON_MASK;
+        /* Resume WAKEUPMIX TBU operation */
+        CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT |=
+            CCM_LPCG_DIRECT_ON_MASK;
+    }
 
     /* Load TRDC N config */
     status = DEV_SM_RdcLoad(DEV_SM_TRDC_N);
@@ -845,38 +849,42 @@ int32_t DEV_SM_NocPowerDownPre(void)
 {
     int32_t status = SM_ERR_SUCCESS;
 
-    /* Quiesce WAKEUPMIX SMMU TBUs */
-    CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT &=
-        ~CCM_LPCG_DIRECT_ON_MASK;
-
-    while ((CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].STATUS0 &
-        CCM_LPCG_STATUS0_ON_MASK) != 0U)
+    /* Rev A does not support SMMU TBU/TCU SW control  */
+    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
     {
-        ; /* Intentional empty while */
-    }
+        /* Quiesce WAKEUPMIX SMMU TBUs */
+        CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT &=
+            ~CCM_LPCG_DIRECT_ON_MASK;
 
-    /* Reset WAKEUPMIX SMMU TBUs */
-    SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL |=
-        SRC_XSPR_IRST_REQ_CTRL_RSTR_0_IRST_1_MASK;
+        while ((CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].STATUS0 &
+            CCM_LPCG_STATUS0_ON_MASK) != 0U)
+        {
+            ; /* Intentional empty while */
+        }
 
-    /* Quiesce NOCMIX SMMU TBUs */
-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT &=
-        ~CCM_LPCG_DIRECT_ON_MASK;
+        /* Reset WAKEUPMIX SMMU TBUs */
+        SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL |=
+            SRC_XSPR_IRST_REQ_CTRL_RSTR_0_IRST_1_MASK;
 
-    while ((CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].STATUS0 &
-        CCM_LPCG_STATUS0_ON_MASK) != 0U)
-    {
-        ; /* Intentional empty while */
-    }
+        /* Quiesce NOCMIX SMMU TBUs */
+        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].DIRECT &=
+            ~CCM_LPCG_DIRECT_ON_MASK;
 
-    /* Quiesce WAKEUPMIX SMMU TCU */
-    CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT &=
-        ~CCM_LPCG_DIRECT_ON_MASK;
+        while ((CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TBU].STATUS0 &
+            CCM_LPCG_STATUS0_ON_MASK) != 0U)
+        {
+            ; /* Intentional empty while */
+        }
 
-    while ((CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].STATUS0 &
-        CCM_LPCG_STATUS0_ON_MASK) != 0U)
-    {
-        ; /* Intentional empty while */
+        /* Quiesce WAKEUPMIX SMMU TCU */
+        CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].DIRECT &=
+            ~CCM_LPCG_DIRECT_ON_MASK;
+
+        while ((CCM_CTRL->LPCG[CLOCK_LPCG_NOCMIX_TCU].STATUS0 &
+            CCM_LPCG_STATUS0_ON_MASK) != 0U)
+        {
+            ; /* Intentional empty while */
+        }
     }
 
     /* Return status */
