@@ -198,7 +198,15 @@ const eMcem_CVfccuInstanceCfgType CVfccuCfg =
         { /*!< Faults Enabled */
             (uint32)0xFFFC000BUL,
             (uint32)0x40000003UL,
-            /* Temporarily disable NOC_SSI (fault 66, bit 2): 0x3F -> 0x3B */
+            /*
+             * Temporary workaround: disable NOC_SSI (fault 66, bit 2) by
+             * clearing it from the enable mask (0x3F -> 0x3B). This SSI parity
+             * fault was enabled by SM-378 (after the lf-6.18.2-1.0.0 release)
+             * and fires a spurious FCCU fault (reason=fccu, errId=66) causing a
+             * reset loop on i.MX95 Rev A / AOM5521 boards. Re-enable (restore
+             * 0x3F) once the root cause of the spurious NOC SSI parity fault is
+             * resolved. The other five SSI parity faults remain enabled.
+             */
             (uint32)0x0000003BUL
         },
         { /*!< Reaction Set ID's */
