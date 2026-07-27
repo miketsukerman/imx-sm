@@ -1,0 +1,31 @@
+build/mx95evk/eMcem_Vfccu_MIMX95XX.o: \
+ components/SAF/eMcem/src/eMcem_Vfccu_MIMX95XX.c \
+ components/SAF/SafetyBase/include/MIMX9XX_SAF_Version.h \
+ components/SAF/eMcem/include/eMcem_Types_Ext.h \
+ components/SAF/eMcem/include/eMcem_MemErr_Types_Ext.h \
+ components/SAF/base/include/Std_Types.h \
+ components/SAF/base/include/Platform_Types.h \
+ components/SAF/base/include/Compiler.h \
+ components/SAF/SafetyBase/include/SafetyBase_CompilerDefinition.h \
+ components/SAF/SafetyBase/include/MIMX9XX_SAF_Version.h \
+ components/SAF/devices/MIMX95/include/SafetyBase_Cfg.h \
+ components/SAF/eMcem/include/eMcem_Types_MIMX95XX.h \
+ components/SAF/eMcem/include/eMcem_ErmChannels_Ext.h \
+ components/SAF/eMcem/include/eMcem_ErmChannels_MIMX95XX.h \
+ components/SAF/eMcem/include/eMcem_VfccuFaultList_MIMX95XX.h \
+ components/SAF/SafetyBase/include/eMcem_MemMap.h \
+ components/SAF/SafetyBase/include/SafetyBase_CompilerDefinition.h \
+ components/SAF/eMcem/include/eMcem_Vfccu_Types.h \
+ components/SAF/eMcem/include/eMcem_DdrcChannels_MIMX9.h \
+ components/SAF/eMcem/include/eMcem_EimChannels_MIMX95XX.h \
+ components/SAF/eMcem/include/eMcem_SramcChannels_MIMX9.h \
+ components/SAF/SafetyBase/include/SafetyBase.h \
+ components/SAF/SafetyBase/include/SafetyBase_StdRegMacros.h \
+ components/SAF/base/include/Platform_Types.h \
+ components/SAF/SafetyBase/include/SafetyBase_PmicWrapper.h \
+ components/SAF/SafetyBase/include/sBase_MemMap.h \
+ components/SAF/SafetyBase/include/SafetyBase_HseWrapper.h \
+ components/SAF/SafetyBase/include/SafetyBase_MIMX95XX_SAF.h \
+ components/SAF/SafetyBase/include/SafetyBase_IrqInterface.h \
+ components/SAF/SafetyBase/include/SafetyBase_ErrorInterface.h \
+ components/SAF/eMcem/include/eMcem_Vfccu_MIMX9.h
