@@ -460,12 +460,7 @@ int32_t BRD_SM_BbmRtcAlarmSet(uint32_t rtcId, bool enable, uint64_t val)
                         weekday))
                     {
                         /* Enable interrupt */
-                        if (PCA2131_IntEnable(&g_pca2131Dev, true))
-                        {
-                            /* Enable bus expander interrupt */
-                            status = BRD_SM_BusExpMaskSet(0U, BIT8(6));
-                        }
-                        else
+                        if (!PCA2131_IntEnable(&g_pca2131Dev, true))
                         {
                             status = SM_ERR_HARDWARE_ERROR;
                         }
@@ -486,12 +481,7 @@ int32_t BRD_SM_BbmRtcAlarmSet(uint32_t rtcId, bool enable, uint64_t val)
         else
         {
             /* Disable interrupt */
-            if (PCA2131_IntEnable(&g_pca2131Dev, false))
-            {
-                /* Disable bus expander interrupt */
-                status = BRD_SM_BusExpMaskSet(BIT8(6), BIT8(6));
-            }
-            else
+            if (!PCA2131_IntEnable(&g_pca2131Dev, false))
             {
                 status = SM_ERR_HARDWARE_ERROR;
             }

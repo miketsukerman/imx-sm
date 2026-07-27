@@ -109,6 +109,7 @@ The CONFIG option specifies what configuration directory to use. See the
 |--------------------|--------------------------------------------------------|
 | mx95evk            | MX95 EVK, Linux and M7                                 |
 | mx95alt            | MX95 EVK, AP or M7, for BSP testing and DDR test tool  |
+| mx95aom5521a1      | MX95 AOM-5521-A1, Linux and M7                         |
 | mx94evk            | MX94 EVK, Linux and M7                                 |
 | mx94alt            | MX94 EVK, AP or M7, for BSP testing and DDR test tool  |
 | mx952evk           | MX952 EVK, Linux and M7                                |

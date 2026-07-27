@@ -67,7 +67,7 @@
 /** @} */
 
 /*! Number of board controls */
-#define BRD_SM_NUM_CTRL  8UL
+#define BRD_SM_NUM_CTRL  3UL
 
 /*! Total number of controls */
 #define SM_NUM_CTRL  (DEV_SM_NUM_CTRL + BRD_SM_NUM_CTRL)
@@ -76,14 +76,9 @@
  * @name BRD_SM control domain indexes
  */
 /** @{ */
-#define BRD_SM_CTRL_SD3_WAKE    (DEV_SM_NUM_CTRL + 0U)  /*!< PCAL6408A-0 */
-#define BRD_SM_CTRL_PCIE1_WAKE  (DEV_SM_NUM_CTRL + 1U)  /*!< PCAL6408A-4 */
-#define BRD_SM_CTRL_BT_WAKE     (DEV_SM_NUM_CTRL + 2U)  /*!< PCAL6408A-5 */
-#define BRD_SM_CTRL_PCIE2_WAKE  (DEV_SM_NUM_CTRL + 3U)  /*!< PCAL6408A-6 */
-#define BRD_SM_CTRL_BUTTON      (DEV_SM_NUM_CTRL + 4U)  /*!< PCAL6408A-7 */
-#define BRD_SM_CTRL_TEST        (DEV_SM_NUM_CTRL + 5U)  /*!< Test */
-#define BRD_SM_CTRL_PCA2131     (DEV_SM_NUM_CTRL + 6U)  /*!< PCA2131 raw access */
-#define BRD_SM_CTRL_TEST_A      (DEV_SM_NUM_CTRL + 7U)  /*!< Test action */
+#define BRD_SM_CTRL_TEST        (DEV_SM_NUM_CTRL + 0U)  /*!< Test */
+#define BRD_SM_CTRL_PCA2131     (DEV_SM_NUM_CTRL + 1U)  /*!< PCA2131 raw access */
+#define BRD_SM_CTRL_TEST_A      (DEV_SM_NUM_CTRL + 2U)  /*!< Test action */
 /** @} */
 
 /* Types */
@@ -209,14 +204,6 @@ int32_t BRD_SM_ControlAction(uint32_t ctrlId, uint32_t action,
  * - ::SM_ERR_NOT_FOUND: if ctrlId is not valid.
  */
 int32_t BRD_SM_ControlFlagsSet(uint32_t ctrlId, uint32_t flags);
-
-/*!
- * Control handler.
- *
- * @param[in]     status   Interrupt status
- * @param[in]     val      Signal state
- */
-void BRD_SM_ControlHandler(uint8_t status, uint8_t val);
 
 /** @} */
 

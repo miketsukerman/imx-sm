@@ -48,15 +48,12 @@
 
 /* I2C device addresses */
 #define BOARD_PF09_DEV_ADDR         0x08U
-#define BOARD_PCAL6408A_DEV_ADDR    0x20U
 #define BOARD_PF5301_DEV_ADDR       0x2AU
 #define BOARD_PF5302_DEV_ADDR       0x29U
 #define BOARD_PCA2131_DEV_ADDR      0x53U
 
-#define PCAL6408A_INPUT_PF53_ARM_PG  1U
-#define PCAL6408A_INPUT_PF53_SOC_PG  2U
-#define PCAL6408A_INPUT_PF09_INT     3U
-#define PCAL6408A_INPUT_PCA2131_INT  6U
+/* GPIO1 pin receiving the board interrupts */
+#define BOARD_GPIO1_INT_PIN          10U
 
 /* Local types */
 
@@ -64,7 +61,6 @@
 
 /* Global variables */
 
-PCAL6408A_Type g_pcal6408aDev;
 PF09_Type g_pf09Dev;
 PF53_Type g_pf5301Dev;
 PF53_Type g_pf5302Dev;
@@ -96,26 +92,6 @@ int32_t BRD_SM_SerialDevicesInit(void)
 {
     int32_t status = SM_ERR_SUCCESS;
     LPI2C_Type *const s_i2cBases[] = LPI2C_BASE_PTRS;
-    pcal6408a_config_t pcal6408Config;
-
-    /* Fill in PCAL6408A dev */
-    g_pcal6408aDev.i2cBase = s_i2cBases[BOARD_I2C_INSTANCE];
-    g_pcal6408aDev.devAddr = BOARD_PCAL6408A_DEV_ADDR;
-
-    /* Init the bus expander */
-    PCAL6408A_GetDefaultConfig(&pcal6408Config);
-    pcal6408Config.inputLatch = 0xFFU;
-    if (!PCAL6408A_Init(&g_pcal6408aDev, &pcal6408Config))
-    {
-        status = SM_ERR_HARDWARE_ERROR;
-    }
-    else
-    {
-        if (!PCAL6408A_IntMaskSet(&g_pcal6408aDev, PCAL6408A_INITIAL_MASK))
-        {
-            status = SM_ERR_HARDWARE_ERROR;
-        }
-    }
 
     if (status == SM_ERR_SUCCESS)
     {
@@ -270,38 +246,10 @@ int32_t BRD_SM_SerialDevicesInit(void)
             0U
         };
 
-        /* Init GPIO1-10 */
-        RGPIO_PinInit(GPIO1, 10U, &gpioConfig);
-        RGPIO_SetPinInterruptConfig(GPIO1, 10U, kRGPIO_InterruptOutput0,
-            kRGPIO_InterruptLogicZero);
-    }
-
-    /* Return status */
-    return status;
-}
-
-/*--------------------------------------------------------------------------*/
-/* Set bus expander interrupt mask                                          */
-/*--------------------------------------------------------------------------*/
-int32_t BRD_SM_BusExpMaskSet(uint8_t val, uint8_t mask)
-{
-    int32_t status = SM_ERR_SUCCESS;
-    static uint8_t cachedMask = PCAL6408A_INITIAL_MASK;
-    uint8_t newMask = (cachedMask & ~mask);
-
-    newMask |= val;
-
-    /* Mask changed? */
-    if (cachedMask != newMask)
-    {
-        if (PCAL6408A_IntMaskSet(&g_pcal6408aDev, newMask))
-        {
-            cachedMask = newMask;
-        }
-        else
-        {
-            status = SM_ERR_HARDWARE_ERROR;
-        }
+        /* Init GPIO1 interrupt input */
+        RGPIO_PinInit(GPIO1, BOARD_GPIO1_INT_PIN, &gpioConfig);
+        RGPIO_SetPinInterruptConfig(GPIO1, BOARD_GPIO1_INT_PIN,
+            kRGPIO_InterruptOutput0, kRGPIO_InterruptLogicZero);
     }
 
     /* Return status */
@@ -314,45 +262,24 @@ int32_t BRD_SM_BusExpMaskSet(uint8_t val, uint8_t mask)
 void GPIO1_0_IRQHandler(void)
 {
     uint32_t flags;
-    uint8_t status, val;
 
     /* Get GPIO status */
     flags = RGPIO_GetPinsInterruptFlags(GPIO1, kRGPIO_InterruptOutput0);
 
-    /* Get PCAL6408A status */
-    (void) PCAL6408A_IntStatusGet(&g_pcal6408aDev, &status);
-
-    /* Get value and Clear PCAL6408A interrupts */
-    (void) PCAL6408A_InputGet(&g_pcal6408aDev, &val);
-
     /* Clear GPIO interrupts */
     RGPIO_ClearPinsInterruptFlags(GPIO1, kRGPIO_InterruptOutput0, flags);
 
+    /* The PF09 and PCA2131 interrupts are wire-ORed to the GPIO so both
+       sources are polled */
+
     /* Handle PF09 interrupt */
-    if ((status & BIT8(PCAL6408A_INPUT_PF09_INT)) != 0U)
-    {
-        /* Asserts low */
-        /* gcov_excl_ntbr_nextline - rising edge not seen */
-        if ((val & BIT8(PCAL6408A_INPUT_PF09_INT)) == 0U)
-        {
-            BRD_SM_Pf09Handler();
-        }
-    }
+    BRD_SM_Pf09Handler();
 
     /* Handle PCA2131 interrupt */
-    if (g_pca2131Used && ((status & BIT8(PCAL6408A_INPUT_PCA2131_INT))
-        != 0U))
+    if (g_pca2131Used)
     {
-        /* Asserts low */
-        /* gcov_excl_ntbr_nextline - rising edge not seen */
-        if ((val & BIT8(PCAL6408A_INPUT_PCA2131_INT)) == 0U)
-        {
-            BRD_SM_BbmHandler();
-        }
+        BRD_SM_BbmHandler();
     }
-
-    /* Handle controls interrupts */
-    BRD_SM_ControlHandler(status, val);
 
     /* Adjust dynamic IRQ priority */
     (void) DEV_SM_IrqPrioUpdate();

@@ -268,6 +268,7 @@ board port.
 | Board Port                         | Description                                                                          |
 |------------------------------------|--------------------------------------------------------------------------------------|
 | [mcimx95evk](@ref PORT_MX95_EVK)   | i.MX95 EVK, PF09/53 PMICs, PCAL6408A bus expander, added controls, voltages, sensor  |
+| [mcimx95aom5521a1](@ref PORT_MX95_AOM5521A1) | ADVANTECH AOM-5521-A1, PF09/53 PMICs, no bus expander                      |
 | [mcimx95stub](@ref PORT_MX95_SB)   | i.MX95 stub, no PMIC or board resources                                              |
 | [mcimx94evk](@ref PORT_MX94_EVK)   | i.MX94 EVK, PF09/53 PMICs, PCAL6408A bus expander, added controls, voltages, sensor |
 | [mcimx94stub](@ref PORT_MX94_SB)   | i.MX94 stub, no PMIC or board resources                                             |
@@ -355,6 +356,33 @@ mode select (mSel) options which can be specified using the MSEL=\<mSel\> option
 
 The mx95alt config puts all cores in one LM and they share all IP. This config **isn't valid** but it is
 useful for testing OS drivers and starting various M7 images booted by the AP.
+
+ADVANTECH AOM-5521-A1  {#PORT_MX95_AOM5521A1}
+---------------------
+
+This port supports the ADVANTECH AOM-5521-A1 i.MX95 board. It is derived from the
+[mcimx95evk](@ref PORT_MX95_EVK) port and keeps the same LPI2C1, GPIO1, and LPUART2 assignment to the
+SM running on the CM33, as well as the same PF09 and 2x PF53 PMICs, voltage domains, and temperature
+sensors.
+
+The differences relative to the EVK port are:
+
+- There is **no PCAL6408A I2C bus expander** on this board. The [PCAL6408A](@ref pcal6408a) driver is
+  not built, and the PF09 (and optional PCA2131) interrupts are taken directly on GPIO1 signal 10.
+  Because the interrupt sources are wire-ORed on that signal, GPIO1_0_IRQHandler() polls each source
+  rather than decoding a bus expander status register.
+- The board controls that were sourced from the bus expander (BRD_SM_CTRL_SD3_WAKE,
+  BRD_SM_CTRL_PCIE1_WAKE, BRD_SM_CTRL_BT_WAKE, BRD_SM_CTRL_PCIE2_WAKE, and BRD_SM_CTRL_BUTTON) do not
+  exist. Only BRD_SM_CTRL_PCA2131, BRD_SM_CTRL_TEST, and BRD_SM_CTRL_TEST_A remain, and no board
+  control generates a notification.
+
+The configuration for this board is [mx95aom5521a1](@ref CONFIG_MX95AOM5521A1). It is derived from
+[mx95evk](@ref CONFIG_MX95EVK) and uses the same boot mode select (mSel) options. It differs in the
+following resource assignments:
+
+- CAN_FD1 is owned by the AP (LM2) rather than the M7 (LM1).
+- LPUART3 is not assigned to the M7 (LM1).
+- PIN_GPIO_IO14 and PIN_GPIO_IO15 are owned by the AP (LM2) rather than the M7 (LM1).
 
 NXP i.MX95 Stub  {#PORT_MX95_SB}
 ---------------
