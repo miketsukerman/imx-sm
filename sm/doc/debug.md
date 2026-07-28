@@ -543,7 +543,7 @@ provides no syndrome, so the SM reports the following extended info:
 
 | extInfo | Content                                                                    |
 |---------|----------------------------------------------------------------------------|
-| 0       | Boot stage, see DEV_SM_BOOT_STAGE_START in dev_sm_common.h                 |
+| 0       | Boot stage, see the DEV_SM_BOOT_STAGE_* constants in dev_sm_common.h        |
 | 1       | Power domain of the last power state transition requested                  |
 | 2       | Silicon version as returned by DEV_SM_SiVerGet() (< 0x10000 means Rev A)    |
 
