@@ -172,17 +172,6 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
     }
     else
     {
-        /*
-         * MIX-level SSI transaction blocking is required on all silicon
-         * revisions. Rev A (A0/A1) is *not* exempt: omitting the blocking
-         * around a NOC (DEV_SM_PD_NOC) power-up lets in-flight transactions
-         * cross the power transition, which raises FCCU fault 66
-         * (DEV_SM_FAULT_NOC_SSI) and resets the SoC during SM init. The
-         * blocking is only skipped when explicitly requested for regression
-         * testing (see SM_REVA_SKIP_MIX_SSI).
-         */
-        bool ssiCtrl = !DEV_SM_SKIP_MIX_SSI();
-
         /* Record domain for fault diagnostics */
         g_bootStageDomain = domainId;
 
@@ -191,20 +180,27 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
             case DEV_SM_POWER_STATE_ON:
                 if (PWR_IsParentPowered(domainId))
                 {
-                    /* Disable MIX-level transaction blocking */
-                    if (ssiCtrl)
+                    /* Skip MIX-level transaction blocking on Rev A  */
+                    if (DEV_SM_IS_REVA())
                     {
-                        PWR_MixSsiBlockingSet(domainId, false);
-                    }
-
-                    if (SRC_MixSoftPowerUp(domainId))
-                    {
-                        status = DEV_SM_PowerUpPost(domainId);
-
-                        if ((status == SM_ERR_SUCCESS) && ssiCtrl)
+                        if (SRC_MixSoftPowerUp(domainId))
                         {
-                            /* Restore MIX-level transaction blocking */
-                            PWR_MixSsiBlockingUpdate(domainId);
+                            status = DEV_SM_PowerUpPost(domainId);
+                        }
+                    }
+                    else
+                    {
+                        /* Disable MIX-level transaction blocking */
+                        PWR_MixSsiBlockingSet(domainId, false);
+                        if (SRC_MixSoftPowerUp(domainId))
+                        {
+                            status = DEV_SM_PowerUpPost(domainId);
+
+                            if (status == SM_ERR_SUCCESS)
+                            {
+                                /* Restore MIX-level transaction blocking */
+                                PWR_MixSsiBlockingUpdate(domainId);
+                            }
                         }
                     }
                 }
@@ -216,15 +212,22 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
             case DEV_SM_POWER_STATE_OFF:
                 if (!PWR_AnyChildPowered(domainId))
                 {
-                    /* Disable MIX-level transaction blocking */
-                    if (ssiCtrl)
+                    /* Skip MIX-level transaction blocking on Rev A  */
+                    if (DEV_SM_IS_REVA())
                     {
-                        PWR_MixSsiBlockingSet(domainId, false);
+                        if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
+                        {
+                            SRC_MixSoftPowerDown(domainId);
+                        }
                     }
-
-                    if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
+                    else
                     {
-                        SRC_MixSoftPowerDown(domainId);
+                        /* Disable MIX-level transaction blocking */
+                        PWR_MixSsiBlockingSet(domainId, false);
+                        if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
+                        {
+                            SRC_MixSoftPowerDown(domainId);
+                        }
                     }
                 }
                 else

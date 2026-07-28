@@ -86,9 +86,6 @@ endif
 ifdef REVA_QUIRKS
 	FLAGS += -DSM_REVA_QUIRKS=$(REVA_QUIRKS)U
 endif
-ifeq ($(SKIP_MIX_SSI),1)
-	FLAGS += -DSM_REVA_SKIP_MIX_SSI
-endif
 ifeq ($(DIRECT_CGC),1)
 	FLAGS += -DSM_REVA_DIRECT_CGC
 endif

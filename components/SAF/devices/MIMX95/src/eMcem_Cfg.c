@@ -199,12 +199,19 @@ const eMcem_CVfccuInstanceCfgType CVfccuCfg =
             (uint32)0xFFFC000BUL,
             (uint32)0x40000003UL,
 #ifdef SM_MASK_FAULT_NOC_SSI
-            /* DIAGNOSTIC ONLY - fault 66 (NOC SSI parity) disabled. This
-               masks a real bus error and must never be enabled in a
-               shipping image. Off by default, see MASK_NOC_SSI in
+            /* DIAGNOSTIC / TEMPORARY UNBLOCK ONLY - fault 66 (NOC SSI
+               parity) masked, restoring the pre-SM-378 (21ca4f7) state for
+               that bit only. Note SM-378 armed the whole SSI parity group:
+               64 AON, 65 WAKE, 66 NOC, 67 M7, 68 DDR, 69 NPU; only 66 is
+               masked here. This diverges from NXP's shipping FCCU
+               configuration and hides a real fault report rather than
+               fixing its cause, so it must not be the permanent
+               resolution. Off by default, see MASK_NOC_SSI in
                sm/doc/debug.md. */
             (uint32)0x0000003BUL
 #else
+            /* NXP shipping value (SM-378 / 21ca4f7): SSI parity faults
+               64-69 armed */
             (uint32)0x0000003FUL
 #endif
         },

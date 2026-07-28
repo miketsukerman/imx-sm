@@ -565,12 +565,18 @@ This decodes as:
 | 0x00000013 | Power domain         | 19    | ::DEV_SM_PD_NOC, the NOC power domain                  |
 | 0x00000001 | Silicon version      | 1     | ::DEV_SM_SIVER_A1, Rev A detected correctly            |
 
-The root cause was that MIX-level SSI transaction blocking
-(PWR_MixSsiBlockingSet()/PWR_MixSsiBlockingUpdate()) was skipped on Rev A in
-DEV_SM_PowerStateSet(). Without it, in-flight transactions cross the NOC power transition and
-raise a NOC SSI parity fault (::DEV_SM_FAULT_NOC_SSI, fault 66), which resets the SoC. Rev A
-**does** require MIX SSI transaction blocking. The blocking is now applied on all silicon
-revisions by default, which is the fix; no build option needs to be set to get it.
+The fault is raised while the NOC power domain is powered up during SM init, on Rev A silicon
+that is correctly detected. The **cause is not yet established**. An earlier revision of this
+document claimed the cause was that MIX-level SSI transaction blocking
+(PWR_MixSsiBlockingSet()/PWR_MixSsiBlockingUpdate()) is skipped on Rev A in
+DEV_SM_PowerStateSet(). That claim is **wrong**: applying the blocking on Rev A reproduces the
+fault with an identical signature, and the last known-good firmware skips the blocking and boots.
+The Rev A code paths are therefore left as upstream.
+
+What is established is that fault 66 is part of the SSI parity group (faults 64-69) that was
+masked until SM-378 (commit 21ca4f7) set the FCCU "Faults Enabled" word[2] from `0x00000000` to
+`0x0000003F`. See `docs/nxp-escalation-fccu-fault-66.md` for the current state of the
+investigation and the open question for NXP.
 
 Build options {#DEBUG_FCCU_OPT}
 -------------
@@ -584,18 +590,9 @@ a plain `make config=mx95evk`.
 | FAULT_DIAG=1    | Report each FCCU fault (ID, boot stage, power domain, silicon version) and continue booting instead of applying the configured reaction. The report is written with a bounded polled write to the debug UART so it is safe in fault (IRQ) context. After 8 faults the reporting stops, FCCU_INT0_IRQn is disabled, and a single "fault storm, further faults suppressed" line is emitted. Requires DEBUG=1; the build fails otherwise. |
 | REVA_QUIRKS=0   | Never apply the Rev A (A0/A1) code paths (use the B0 paths on all silicon)                                   |
 | REVA_QUIRKS=2   | Always apply the Rev A code paths, regardless of the detected silicon version                                |
-| SKIP_MIX_SSI=1  | Skip MIX-level SSI transaction blocking on Rev A. This **reproduces the historical bug** described above and exists for regression testing only. Never enable it in a shipping image. |
 | DIRECT_CGC=1    | Write the CGC registers directly (CCM_CgcSetEnable()) on Rev A instead of the ordered CLOCK_CgcSetEnable() path. Defaults to off on all silicon revisions: no Rev A erratum requiring the direct write has been identified, and the ordered path is the one validated on B0. Provided to bisect clock gate related faults. |
-| MASK_NOC_SSI=1  | **Diagnostic escape hatch only - must not be enabled in shipping images.** Disables FCCU fault 66 (::DEV_SM_FAULT_NOC_SSI) entirely. Masking the fault hides a real bus error rather than fixing it. Only useful to confirm that fault 66 is the fault causing a reset loop, or when working around ERR053263 (a TRDC denied error can result in a parity fault) during bring-up. |
+| MASK_NOC_SSI=1  | **Diagnostic / temporary-unblock option - must not be the permanent resolution.** Clears the enable bit for fault 66 (::DEV_SM_FAULT_NOC_SSI), restoring the pre-SM-378 (21ca4f7) masking for that bit. It diverges from NXP's shipping FCCU configuration. Note SM-378 armed the whole SSI parity group - 64 (::DEV_SM_FAULT_AON_SSI), 65 (::DEV_SM_FAULT_WAKE_SSI), 66, 67 (::DEV_SM_FAULT_M7_SSI), 68 (::DEV_SM_FAULT_DDR_SSI), 69 (::DEV_SM_FAULT_NPU_SSI) - and only bit 66 is cleared by this option, so the siblings stay armed. Masking silences the report, not the underlying condition. Useful to confirm fault 66 is what causes a reset loop and to unblock bring-up while the cause is escalated. |
 | BUS_EXP=1       | Board populates a PCAL6408A bus expander (i.MX95 EVK)                                                        |
-
-Regression test for the fault 66 fix {#DEBUG_FCCU_REG}
-------------------------------------
-
-| Build                                | Expected result                                     |
-|--------------------------------------|-----------------------------------------------------|
-| `make config=mx95evk`                | Boots normally, MIX SSI blocking applied (fix active)|
-| `make config=mx95evk SKIP_MIX_SSI=1` | Reproduces the fault 66 reset loop on Rev A silicon  |
 
 Narrowing down a new fault {#DEBUG_FCCU_NEW}
 --------------------------
@@ -608,3 +605,6 @@ Narrowing down a new fault {#DEBUG_FCCU_NEW}
 3. If the fault occurs while loading a TRDC configuration (::DEV_SM_BOOT_STAGE_RDC), it is likely
    a denied access surfacing as a parity fault (ERR053263). Correct the TRDC config. Note a TRDC
    denial normally surfaces as fault 61 (::DEV_SM_FAULT_M33_AXBS), not fault 66.
+4. To determine whether a newly seen fault was merely unmasked rather than newly generated,
+   check when its enable bit was set in the FCCU "Faults Enabled" bitmap in
+   components/SAF/devices/MIMX95/src/eMcem_Cfg.c: word[k] bit N enables fault 32*k+N.
