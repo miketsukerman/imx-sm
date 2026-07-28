@@ -109,12 +109,41 @@
 #define DEV_SM_IS_REVA()  (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
 #endif
 
+/*
+ * MIX-level SSI transaction blocking is required on all silicon revisions,
+ * including Rev A. Omitting it around a NOC (::DEV_SM_PD_NOC) power-up lets
+ * in-flight transactions cross the power transition and results in an FCCU
+ * fault 66 (::DEV_SM_FAULT_NOC_SSI) and a SoC reset. SM_REVA_SKIP_MIX_SSI
+ * restores the historical (broken) behavior for regression testing only and
+ * is off by default.
+ */
 #ifdef SM_REVA_SKIP_MIX_SSI
 /*! Check if MIX-level SSI transaction blocking should be skipped */
 #define DEV_SM_SKIP_MIX_SSI()  DEV_SM_IS_REVA()
 #else
 /*! Check if MIX-level SSI transaction blocking should be skipped */
 #define DEV_SM_SKIP_MIX_SSI()  false
+#endif
+
+/*
+ * Selects the clock gate API used by DEV_SM_ClockEnable(). This is a
+ * separate concern from DEV_SM_SKIP_MIX_SSI() above:
+ *
+ * - false (default): CLOCK_CgcSetEnable(), which orders the gate change
+ *   against the MIX SSI blocking state of the source MIX
+ * - true: CCM_CgcSetEnable(), which writes the CGC directly
+ *
+ * The default is false on all silicon revisions. No Rev A erratum requiring
+ * the direct CGC write has been identified, and the ordered path is the one
+ * validated on B0. SM_REVA_DIRECT_CGC selects the direct path on Rev A for
+ * bisecting clock-gate related faults.
+ */
+#ifdef SM_REVA_DIRECT_CGC
+/*! Check if the CGC registers should be written directly */
+#define DEV_SM_USE_DIRECT_CGC()  DEV_SM_IS_REVA()
+#else
+/*! Check if the CGC registers should be written directly */
+#define DEV_SM_USE_DIRECT_CGC()  false
 #endif
 /** @} */
 

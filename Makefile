@@ -82,12 +82,15 @@ ifeq ($(DEBUG),1)
     FLAGS += -DDEBUG
 endif
 
-# Configure fault/silicon revision debug options (see sm/doc/dev.md)
+# Configure fault/silicon revision debug options (see sm/doc/debug.md)
 ifdef REVA_QUIRKS
 	FLAGS += -DSM_REVA_QUIRKS=$(REVA_QUIRKS)U
 endif
 ifeq ($(SKIP_MIX_SSI),1)
 	FLAGS += -DSM_REVA_SKIP_MIX_SSI
+endif
+ifeq ($(DIRECT_CGC),1)
+	FLAGS += -DSM_REVA_DIRECT_CGC
 endif
 ifeq ($(MASK_NOC_SSI),1)
 	FLAGS += -DSM_MASK_FAULT_NOC_SSI

@@ -437,7 +437,10 @@ int32_t DEV_SM_NocConfigLoad(void)
         SM_CFG_END
     };
 
-    /* Rev A does not support SMMU TBU/TCU SW control  */
+    /* TODO: unverified Rev A claim inherited from the Rev A silicon
+       support commit. Skipping SMMU TBU/TCU SW control on Rev A has
+       not been confirmed against the i.MX95 A0 reference manual or
+       errata. Behavior left unchanged pending verification. */
     if (!DEV_SM_IS_REVA())
     {
         /* Deassert reset for WAKEUPMIX SMMU TBUs */
@@ -933,7 +936,10 @@ int32_t DEV_SM_NocPowerDownPre(void)
 {
     int32_t status = SM_ERR_SUCCESS;
 
-    /* Rev A does not support SMMU TBU/TCU SW control  */
+    /* TODO: unverified Rev A claim inherited from the Rev A silicon
+       support commit. Skipping SMMU TBU/TCU SW control on Rev A has
+       not been confirmed against the i.MX95 A0 reference manual or
+       errata. Behavior left unchanged pending verification. */
     if (!DEV_SM_IS_REVA())
     {
         /* Quiesce WAKEUPMIX SMMU TBUs */

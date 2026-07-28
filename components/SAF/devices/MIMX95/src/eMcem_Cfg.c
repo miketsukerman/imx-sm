@@ -199,8 +199,10 @@ const eMcem_CVfccuInstanceCfgType CVfccuCfg =
             (uint32)0xFFFC000BUL,
             (uint32)0x40000003UL,
 #ifdef SM_MASK_FAULT_NOC_SSI
-            /* Fault 66 (NOC SSI parity) disabled. Due to ERR053263, a TRDC
-               denied error can result in a parity fault and a SOC reset. */
+            /* DIAGNOSTIC ONLY - fault 66 (NOC SSI parity) disabled. This
+               masks a real bus error and must never be enabled in a
+               shipping image. Off by default, see MASK_NOC_SSI in
+               sm/doc/debug.md. */
             (uint32)0x0000003BUL
 #else
             (uint32)0x0000003FUL

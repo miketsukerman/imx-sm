@@ -547,25 +547,64 @@ provides no syndrome, so the SM reports the following extended info:
 | 1       | Power domain of the last power state transition requested                  |
 | 2       | Silicon version as returned by DEV_SM_SiVerGet() (< 0x10000 means Rev A)    |
 
+Worked example: fault 66 on Rev A {#DEBUG_FCCU_EX}
+---------------------------------
+
+An A0/A1 (Rev A) board looping on reset during SM init reported:
+
+    Reset request: reason=fccu, errId=66
+      0x00000009
+      0x00000013
+      0x00000001
+
+This decodes as:
+
+| Word       | Field                | Value | Meaning                                                |
+|------------|----------------------|-------|--------------------------------------------------------|
+| 0x00000009 | Boot stage           | 9     | ::DEV_SM_BOOT_STAGE_PWRUP, the power up loop in DEV_SM_Init() |
+| 0x00000013 | Power domain         | 19    | ::DEV_SM_PD_NOC, the NOC power domain                  |
+| 0x00000001 | Silicon version      | 1     | ::DEV_SM_SIVER_A1, Rev A detected correctly            |
+
+The root cause was that MIX-level SSI transaction blocking
+(PWR_MixSsiBlockingSet()/PWR_MixSsiBlockingUpdate()) was skipped on Rev A in
+DEV_SM_PowerStateSet(). Without it, in-flight transactions cross the NOC power transition and
+raise a NOC SSI parity fault (::DEV_SM_FAULT_NOC_SSI, fault 66), which resets the SoC. Rev A
+**does** require MIX SSI transaction blocking. The blocking is now applied on all silicon
+revisions by default, which is the fix; no build option needs to be set to get it.
+
+Build options {#DEBUG_FCCU_OPT}
+-------------
+
 The following build options aid debugging these faults. They are passed as make variables, e.g.
-`make config=mx95evk FAULT_DIAG=1`.
+`make config=mx95evk DEBUG=1 FAULT_DIAG=1`. All default to off; the shipping configuration is
+a plain `make config=mx95evk`.
 
 | Option          | Description                                                                                                 |
 |-----------------|-------------------------------------------------------------------------------------------------------------|
-| FAULT_DIAG=1    | Print each FCCU fault (ID, boot stage, power domain, silicon version) and continue booting instead of applying the configured reaction. Debug builds only. |
+| FAULT_DIAG=1    | Report each FCCU fault (ID, boot stage, power domain, silicon version) and continue booting instead of applying the configured reaction. The report is written with a bounded polled write to the debug UART so it is safe in fault (IRQ) context. After 8 faults the reporting stops, FCCU_INT0_IRQn is disabled, and a single "fault storm, further faults suppressed" line is emitted. Requires DEBUG=1; the build fails otherwise. |
 | REVA_QUIRKS=0   | Never apply the Rev A (A0/A1) code paths (use the B0 paths on all silicon)                                   |
 | REVA_QUIRKS=2   | Always apply the Rev A code paths, regardless of the detected silicon version                                |
-| SKIP_MIX_SSI=1  | Skip MIX-level SSI transaction blocking on Rev A (behavior prior to this option)                             |
-| MASK_NOC_SSI=1  | Disable FCCU fault 66 (::DEV_SM_FAULT_NOC_SSI). Useful when ERR053263 (a TRDC denied error can result in a parity fault) causes NOC SSI parity faults. |
+| SKIP_MIX_SSI=1  | Skip MIX-level SSI transaction blocking on Rev A. This **reproduces the historical bug** described above and exists for regression testing only. Never enable it in a shipping image. |
+| DIRECT_CGC=1    | Write the CGC registers directly (CCM_CgcSetEnable()) on Rev A instead of the ordered CLOCK_CgcSetEnable() path. Defaults to off on all silicon revisions: no Rev A erratum requiring the direct write has been identified, and the ordered path is the one validated on B0. Provided to bisect clock gate related faults. |
+| MASK_NOC_SSI=1  | **Diagnostic escape hatch only - must not be enabled in shipping images.** Disables FCCU fault 66 (::DEV_SM_FAULT_NOC_SSI) entirely. Masking the fault hides a real bus error rather than fixing it. Only useful to confirm that fault 66 is the fault causing a reset loop, or when working around ERR053263 (a TRDC denied error can result in a parity fault) during bring-up. |
 | BUS_EXP=1       | Board populates a PCAL6408A bus expander (i.MX95 EVK)                                                        |
 
-A fault 66 (::DEV_SM_FAULT_NOC_SSI) reset loop during SM init can be narrowed down as follows:
+Regression test for the fault 66 fix {#DEBUG_FCCU_REG}
+------------------------------------
 
-1. Build with `FAULT_DIAG=1`. The log reports every fault, the boot stage and the power domain
-   involved, and the boot continues so that all faults are seen. The reported silicon version
-   confirms whether Rev A detection is correct.
+| Build                                | Expected result                                     |
+|--------------------------------------|-----------------------------------------------------|
+| `make config=mx95evk`                | Boots normally, MIX SSI blocking applied (fix active)|
+| `make config=mx95evk SKIP_MIX_SSI=1` | Reproduces the fault 66 reset loop on Rev A silicon  |
+
+Narrowing down a new fault {#DEBUG_FCCU_NEW}
+--------------------------
+
+1. Build with `DEBUG=1 FAULT_DIAG=1`. The log reports every fault, the boot stage and the power
+   domain involved, and the boot continues so that all faults are seen. The reported silicon
+   version confirms whether Rev A detection is correct.
 2. If the reported boot stage/domain points at a power transition, compare `REVA_QUIRKS=0` and
    `REVA_QUIRKS=2` builds to determine whether the Rev A code paths are responsible.
-3. If the fault occurs while loading a TRDC configuration, it is likely a denied access surfacing
-   as a parity fault (ERR053263). Correct the TRDC config, or build with `MASK_NOC_SSI=1` to
-   disable the fault as is done for fault 61 (::DEV_SM_FAULT_M33_AXBS).
+3. If the fault occurs while loading a TRDC configuration (::DEV_SM_BOOT_STAGE_RDC), it is likely
+   a denied access surfacing as a parity fault (ERR053263). Correct the TRDC config. Note a TRDC
+   denial normally surfaces as fault 61 (::DEV_SM_FAULT_M33_AXBS), not fault 66.

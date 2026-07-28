@@ -172,8 +172,15 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
     }
     else
     {
-        /* MIX-level transaction blocking is only skipped when explicitly
-           requested (see SM_REVA_SKIP_MIX_SSI) */
+        /*
+         * MIX-level SSI transaction blocking is required on all silicon
+         * revisions. Rev A (A0/A1) is *not* exempt: omitting the blocking
+         * around a NOC (DEV_SM_PD_NOC) power-up lets in-flight transactions
+         * cross the power transition, which raises FCCU fault 66
+         * (DEV_SM_FAULT_NOC_SSI) and resets the SoC during SM init. The
+         * blocking is only skipped when explicitly requested for regression
+         * testing (see SM_REVA_SKIP_MIX_SSI).
+         */
         bool ssiCtrl = !DEV_SM_SKIP_MIX_SSI();
 
         /* Record domain for fault diagnostics */
