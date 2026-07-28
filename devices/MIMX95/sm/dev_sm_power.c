@@ -172,32 +172,32 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
     }
     else
     {
+        /* MIX-level transaction blocking is only skipped when explicitly
+           requested (see SM_REVA_SKIP_MIX_SSI) */
+        bool ssiCtrl = !DEV_SM_SKIP_MIX_SSI();
+
+        /* Record domain for fault diagnostics */
+        g_bootStageDomain = domainId;
+
         switch (powerState)
         {
             case DEV_SM_POWER_STATE_ON:
                 if (PWR_IsParentPowered(domainId))
                 {
-                    /* Skip MIX-level transaction blocking on Rev A  */
-                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                    /* Disable MIX-level transaction blocking */
+                    if (ssiCtrl)
                     {
-                        if (SRC_MixSoftPowerUp(domainId))
-                        {
-                            status = DEV_SM_PowerUpPost(domainId);
-                        }
-                    }
-                    else
-                    {
-                        /* Disable MIX-level transaction blocking */
                         PWR_MixSsiBlockingSet(domainId, false);
-                        if (SRC_MixSoftPowerUp(domainId))
-                        {
-                            status = DEV_SM_PowerUpPost(domainId);
+                    }
 
-                            if (status == SM_ERR_SUCCESS)
-                            {
-                                /* Restore MIX-level transaction blocking */
-                                PWR_MixSsiBlockingUpdate(domainId);
-                            }
+                    if (SRC_MixSoftPowerUp(domainId))
+                    {
+                        status = DEV_SM_PowerUpPost(domainId);
+
+                        if ((status == SM_ERR_SUCCESS) && ssiCtrl)
+                        {
+                            /* Restore MIX-level transaction blocking */
+                            PWR_MixSsiBlockingUpdate(domainId);
                         }
                     }
                 }
@@ -209,22 +209,15 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
             case DEV_SM_POWER_STATE_OFF:
                 if (!PWR_AnyChildPowered(domainId))
                 {
-                    /* Skip MIX-level transaction blocking on Rev A  */
-                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                    /* Disable MIX-level transaction blocking */
+                    if (ssiCtrl)
                     {
-                        if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
-                        {
-                            SRC_MixSoftPowerDown(domainId);
-                        }
-                    }
-                    else
-                    {
-                        /* Disable MIX-level transaction blocking */
                         PWR_MixSsiBlockingSet(domainId, false);
-                        if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
-                        {
-                            SRC_MixSoftPowerDown(domainId);
-                        }
+                    }
+
+                    if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
+                    {
+                        SRC_MixSoftPowerDown(domainId);
                     }
                 }
                 else

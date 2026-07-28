@@ -438,7 +438,7 @@ int32_t DEV_SM_NocConfigLoad(void)
     };
 
     /* Rev A does not support SMMU TBU/TCU SW control  */
-    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
+    if (!DEV_SM_IS_REVA())
     {
         /* Deassert reset for WAKEUPMIX SMMU TBUs */
         SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL &=
@@ -934,7 +934,7 @@ int32_t DEV_SM_NocPowerDownPre(void)
     int32_t status = SM_ERR_SUCCESS;
 
     /* Rev A does not support SMMU TBU/TCU SW control  */
-    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
+    if (!DEV_SM_IS_REVA())
     {
         /* Quiesce WAKEUPMIX SMMU TBUs */
         CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT &=

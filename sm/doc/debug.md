@@ -15,6 +15,7 @@ This section covers or links to the following debug topics:
 - [Suspend/resume issues](@ref DEBUG_SUSPEND)
 - [Debugging SCMI API and peripheral access issues](@ref DEBUG_CONFIG)
 - [Errors during boot](@ref DEBUG_BOOT)
+- [FCCU fault debug](@ref DEBUG_FCCU)
 
 Reset Debug {#DEBUG_RESET}
 ===========
@@ -528,3 +529,43 @@ When the SM boots, it records several kinds of info that can be used to debug bo
   configured for the LM in the cfg file then lack of an image will **not** result in a -130 error
   (::SCMI_ERR_MISSING_PARAMETERS).
 
+
+FCCU Fault Debug (i.MX95) {#DEBUG_FCCU}
+=========================
+
+FCCU faults that occur before the SM banner is printed are reported as a reset with
+::DEV_SM_REASON_FCCU and the fault ID in *errId*:
+
+    Reset request: reason=fccu, errId=66
+
+For the SSI parity faults (::DEV_SM_FAULT_AON_SSI through ::DEV_SM_FAULT_NPU_SSI) the hardware
+provides no syndrome, so the SM reports the following extended info:
+
+| extInfo | Content                                                                    |
+|---------|----------------------------------------------------------------------------|
+| 0       | Boot stage, see DEV_SM_BOOT_STAGE_START in dev_sm_common.h                 |
+| 1       | Power domain of the last power state transition requested                  |
+| 2       | Silicon version as returned by DEV_SM_SiVerGet() (< 0x10000 means Rev A)    |
+
+The following build options aid debugging these faults. They are passed as make variables, e.g.
+`make config=mx95evk FAULT_DIAG=1`.
+
+| Option          | Description                                                                                                 |
+|-----------------|-------------------------------------------------------------------------------------------------------------|
+| FAULT_DIAG=1    | Print each FCCU fault (ID, boot stage, power domain, silicon version) and continue booting instead of applying the configured reaction. Debug builds only. |
+| REVA_QUIRKS=0   | Never apply the Rev A (A0/A1) code paths (use the B0 paths on all silicon)                                   |
+| REVA_QUIRKS=2   | Always apply the Rev A code paths, regardless of the detected silicon version                                |
+| SKIP_MIX_SSI=1  | Skip MIX-level SSI transaction blocking on Rev A (behavior prior to this option)                             |
+| MASK_NOC_SSI=1  | Disable FCCU fault 66 (::DEV_SM_FAULT_NOC_SSI). Useful when ERR053263 (a TRDC denied error can result in a parity fault) causes NOC SSI parity faults. |
+| BUS_EXP=1       | Board populates a PCAL6408A bus expander (i.MX95 EVK)                                                        |
+
+A fault 66 (::DEV_SM_FAULT_NOC_SSI) reset loop during SM init can be narrowed down as follows:
+
+1. Build with `FAULT_DIAG=1`. The log reports every fault, the boot stage and the power domain
+   involved, and the boot continues so that all faults are seen. The reported silicon version
+   confirms whether Rev A detection is correct.
+2. If the reported boot stage/domain points at a power transition, compare `REVA_QUIRKS=0` and
+   `REVA_QUIRKS=2` builds to determine whether the Rev A code paths are responsible.
+3. If the fault occurs while loading a TRDC configuration, it is likely a denied access surfacing
+   as a parity fault (ERR053263). Correct the TRDC config, or build with `MASK_NOC_SSI=1` to
+   disable the fault as is done for fault 61 (::DEV_SM_FAULT_M33_AXBS).

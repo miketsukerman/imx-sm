@@ -82,6 +82,23 @@ ifeq ($(DEBUG),1)
     FLAGS += -DDEBUG
 endif
 
+# Configure fault/silicon revision debug options (see sm/doc/dev.md)
+ifdef REVA_QUIRKS
+	FLAGS += -DSM_REVA_QUIRKS=$(REVA_QUIRKS)U
+endif
+ifeq ($(SKIP_MIX_SSI),1)
+	FLAGS += -DSM_REVA_SKIP_MIX_SSI
+endif
+ifeq ($(MASK_NOC_SSI),1)
+	FLAGS += -DSM_MASK_FAULT_NOC_SSI
+endif
+ifeq ($(FAULT_DIAG),1)
+	FLAGS += -DSM_FAULT_DIAG
+endif
+ifeq ($(BUS_EXP),1)
+	FLAGS += -DBOARD_HAS_BUS_EXP=1
+endif
+
 ifeq ($(INC_LIBC),1)
     FLAGS += -DINC_LIBC
 endif

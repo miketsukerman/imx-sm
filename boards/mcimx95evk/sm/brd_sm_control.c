@@ -105,6 +105,10 @@ int32_t BRD_SM_ControlGet(uint32_t ctrlId, uint32_t *numRtn, uint32_t *rtn)
         }
         else if (ctrlId < BRD_SM_CTRL_TEST)
         {
+#if !BOARD_HAS_BUS_EXP
+            /* No bus expander to read */
+            status = SM_ERR_NOT_SUPPORTED;
+#else
             uint8_t data;
 
             /* Read expander data input */
@@ -125,6 +129,7 @@ int32_t BRD_SM_ControlGet(uint32_t ctrlId, uint32_t *numRtn, uint32_t *rtn)
             {
                 status = SM_ERR_HARDWARE_ERROR;
             }
+#endif
         }
         else
         {

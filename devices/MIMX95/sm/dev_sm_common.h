@@ -82,6 +82,64 @@
 /** @} */
 
 /*!
+ * @name Rev A (A0/A1) quirk selection
+ *
+ * The SM applies a set of workarounds when running on Rev A (A0/A1) silicon.
+ * SM_REVA_QUIRKS allows these to be forced on/off at build time to bisect
+ * problems suspected to be caused by the Rev A code paths:
+ *
+ * - 0: never apply the Rev A quirks (always use the B0 code paths)
+ * - 1: apply the Rev A quirks based on the silicon revision (default)
+ * - 2: always apply the Rev A quirks (as if running on A0/A1)
+ */
+/** @{ */
+#ifndef SM_REVA_QUIRKS
+/*! Rev A quirk selection */
+#define SM_REVA_QUIRKS  1U
+#endif
+
+#if (SM_REVA_QUIRKS == 0U)
+/*! Check if the Rev A code paths should be used */
+#define DEV_SM_IS_REVA()  false
+#elif (SM_REVA_QUIRKS == 2U)
+/*! Check if the Rev A code paths should be used */
+#define DEV_SM_IS_REVA()  true
+#else
+/*! Check if the Rev A code paths should be used */
+#define DEV_SM_IS_REVA()  (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+#endif
+
+#ifdef SM_REVA_SKIP_MIX_SSI
+/*! Check if MIX-level SSI transaction blocking should be skipped */
+#define DEV_SM_SKIP_MIX_SSI()  DEV_SM_IS_REVA()
+#else
+/*! Check if MIX-level SSI transaction blocking should be skipped */
+#define DEV_SM_SKIP_MIX_SSI()  false
+#endif
+/** @} */
+
+/*!
+ * @name Boot stages
+ *
+ * Records the progress of DEV_SM_Init(). Reported as extended info in the
+ * reset record for faults that occur during SM init.
+ */
+/** @{ */
+#define DEV_SM_BOOT_STAGE_START     0U   /*!< Before device init */
+#define DEV_SM_BOOT_STAGE_SYSTEM    1U   /*!< DEV_SM_SystemInit() */
+#define DEV_SM_BOOT_STAGE_FAULT     2U   /*!< DEV_SM_FaultInit() */
+#define DEV_SM_BOOT_STAGE_PERF      3U   /*!< DEV_SM_PerfInit() */
+#define DEV_SM_BOOT_STAGE_POWER     4U   /*!< DEV_SM_PowerInit() */
+#define DEV_SM_BOOT_STAGE_MEM       5U   /*!< DEV_SM_MemInit() */
+#define DEV_SM_BOOT_STAGE_CPU       6U   /*!< DEV_SM_CpuInit() */
+#define DEV_SM_BOOT_STAGE_SENSOR    7U   /*!< DEV_SM_SensorInit() */
+#define DEV_SM_BOOT_STAGE_RDC       8U   /*!< DEV_SM_RdcInit() */
+#define DEV_SM_BOOT_STAGE_PWRUP     9U   /*!< DEV_SM_PowerUpPost() loop */
+#define DEV_SM_BOOT_STAGE_BBM       10U  /*!< DEV_SM_BbmInit() */
+#define DEV_SM_BOOT_STAGE_DONE      11U  /*!< Device init complete */
+/** @} */
+
+/*!
  * @name Device init error flags
  */
 /** @{ */
@@ -114,6 +172,12 @@ typedef struct
 
 /*! Structure to hold the syslog */
 extern dev_sm_syslog_t g_syslog;
+
+/*! Current boot stage (see @ref DEV_SM_BOOT_STAGE_START) */
+extern uint32_t g_bootStage;
+
+/*! Power domain of the last power state transition requested */
+extern uint32_t g_bootStageDomain;
 
 /* Functions */
 

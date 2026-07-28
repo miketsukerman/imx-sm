@@ -1056,8 +1056,9 @@ int32_t DEV_SM_ClockEnable(uint32_t clockId, bool enable)
                 /* gcov_excl_multiline 11 */
                 if (clockIndex < CLOCK_NUM_CGC)
                 {
-                    /* Skip MIX-level transaction blocking on Rev A  */
-                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                    /* MIX-level transaction blocking is only skipped when
+                       explicitly requested (see SM_REVA_SKIP_MIX_SSI) */
+                    if (DEV_SM_SKIP_MIX_SSI())
                     {
                         if (!CCM_CgcSetEnable(clockIndex, enable))
                         {

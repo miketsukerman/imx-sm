@@ -126,7 +126,7 @@ int32_t DEV_SM_SystemInit(void)
     DEV_SM_ClockSourceBypass(true, false);
 
     /* Rev A does not support SMMU TBU/TCU SW control  */
-    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
+    if (!DEV_SM_IS_REVA())
     {
         /* Configure SMMU TCU/TBU Q-channel control by SW */
         CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].AUTHEN |=

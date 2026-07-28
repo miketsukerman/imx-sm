@@ -53,6 +53,10 @@
 #define NOC_CENTRAL_TIMEOUT_REG     0xF0U
 #define NOC_WAKEUP_TIMEOUT_REG      0x8CU
 
+/* Range of SSI parity faults (AON, WAKEUP, NOC, M7, DDR, NPU) */
+#define SSI_PARITY_FAULT_FIRST      DEV_SM_FAULT_AON_SSI
+#define SSI_PARITY_FAULT_LAST       DEV_SM_FAULT_NPU_SSI
+
 /* Local types */
 
 /* Local variables */
@@ -112,11 +116,45 @@ int32_t DEV_SM_FaultComplete(dev_sm_rst_rec_t resetRec)
             BLK_CTRL_NOCMIX->INITIATOR_TIMEOUT = modResetRec.extInfo[0U];
         }
     }
+    else if ((modResetRec.errId >= SSI_PARITY_FAULT_FIRST)
+        && (modResetRec.errId <= SSI_PARITY_FAULT_LAST))
+    {
+        /*
+         * SSI parity faults give no HW context. Report the SM boot stage,
+         * the power domain of the last power transition, and the silicon
+         * version to allow the fault to be located.
+         */
+        modResetRec.extLen = 3U;
+        modResetRec.extInfo[0U] = g_bootStage;
+        modResetRec.extInfo[1U] = g_bootStageDomain;
+        modResetRec.extInfo[2U] = DEV_SM_SiVerGet();
+    }
     else
     {
         ; /* Intentionally empty */
     }
 
+#ifdef SM_FAULT_DIAG
+    /*
+     * Diagnostic mode: report the fault but do not apply the configured
+     * reaction. This allows the boot to continue so that all faults, and
+     * the boot stage at which they occur, can be observed.
+     */
+    printf("FCCU fault: errId=%u, stage=%u, pd=%u, siVer=0x%08X\n",
+        modResetRec.errId, g_bootStage, g_bootStageDomain,
+        DEV_SM_SiVerGet());
+
+    /* Clear the fault and continue */
+    status = DEV_SM_FaultSet(0U, modResetRec.errId, false);
+
+    if (status != SM_ERR_SUCCESS)
+    {
+        /* Fault could not be cleared, mask further FCCU interrupts to
+           avoid an interrupt storm */
+        NVIC_DisableIRQ(FCCU_INT0_IRQn);
+        status = SM_ERR_SUCCESS;
+    }
+#else
     /* Call handler */
     status = SM_FAULTCOMPLETE(modResetRec);
 
@@ -131,7 +169,7 @@ int32_t DEV_SM_FaultComplete(dev_sm_rst_rec_t resetRec)
            delayed recovery via clear with DEV_SM_FaultSet() */
         NVIC_DisableIRQ(FCCU_INT0_IRQn);
     }
-
+#endif
     /* Return status */
     return status;
 }

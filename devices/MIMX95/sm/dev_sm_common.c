@@ -68,6 +68,10 @@
 
 dev_sm_syslog_t g_syslog;
 
+uint32_t g_bootStage = DEV_SM_BOOT_STAGE_START;
+
+uint32_t g_bootStageDomain = 0U;
+
 /* Local functions */
 
 static void DEV_SM_StrCpy(char *dst, const char *src, uint32_t maxLen);

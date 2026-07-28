@@ -111,7 +111,7 @@ int32_t DEV_SM_SensorInit(void)
     bool secAccess = false;
 
     /* Check if A0/1 which allows SM to start */
-    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+    if (DEV_SM_IS_REVA())
     {
         secAccess = true;
     }
