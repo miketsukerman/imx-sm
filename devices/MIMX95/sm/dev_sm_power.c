@@ -172,13 +172,16 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
     }
     else
     {
+        /* Record domain for fault diagnostics */
+        g_bootStageDomain = domainId;
+
         switch (powerState)
         {
             case DEV_SM_POWER_STATE_ON:
                 if (PWR_IsParentPowered(domainId))
                 {
                     /* Skip MIX-level transaction blocking on Rev A  */
-                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                    if (DEV_SM_IS_REVA())
                     {
                         if (SRC_MixSoftPowerUp(domainId))
                         {
@@ -210,7 +213,7 @@ int32_t DEV_SM_PowerStateSet(uint32_t domainId, uint8_t powerState)
                 if (!PWR_AnyChildPowered(domainId))
                 {
                     /* Skip MIX-level transaction blocking on Rev A  */
-                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                    if (DEV_SM_IS_REVA())
                     {
                         if (DEV_SM_PowerDownPre(domainId) == SM_ERR_SUCCESS)
                         {

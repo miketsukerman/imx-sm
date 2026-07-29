@@ -44,6 +44,9 @@
 #ifdef DEVICE_HAS_FCCU
 #include "eMcem.h"
 #endif
+#ifdef SM_FAULT_DIAG
+#include "brd_sm.h"
+#endif
 
 /* Local defines */
 
@@ -53,9 +56,51 @@
 #define NOC_CENTRAL_TIMEOUT_REG     0xF0U
 #define NOC_WAKEUP_TIMEOUT_REG      0x8CU
 
+/* Range of SSI parity faults (AON, WAKEUP, NOC, M7, DDR, NPU) */
+#define SSI_PARITY_FAULT_FIRST      DEV_SM_FAULT_AON_SSI
+#define SSI_PARITY_FAULT_LAST       DEV_SM_FAULT_NPU_SSI
+
+#ifdef SM_FAULT_DIAG
+#ifndef DEBUG
+#error "SM_FAULT_DIAG (FAULT_DIAG=1) requires a debug build (DEBUG=1)"
+#endif
+
+/*
+ * Number of faults reported before the diagnostic output is suppressed.
+ * Clearing a fault with DEV_SM_FaultSet() does not clear the underlying
+ * condition, so a genuine fault re-enters this handler immediately. Eight
+ * reports are enough to show the boot stage and the domain of the first
+ * faults while keeping the log readable.
+ */
+#define FAULT_DIAG_MAX_REPORT       8U
+
+/*
+ * Bounded poll count waiting for room in the debug UART transmit FIFO. At
+ * the slowest supported M33 clock this is far longer than the time to shift
+ * out one character at 115200 baud, so it never truncates output on a
+ * working UART; its only purpose is to guarantee forward progress if the
+ * UART is unclocked or held in reset, since this runs in fault (IRQ)
+ * context where blocking forever would hide the fault entirely.
+ */
+#define FAULT_DIAG_UART_POLL        100000U
+#endif
+
 /* Local types */
 
 /* Local variables */
+
+#ifdef SM_FAULT_DIAG
+/* Number of faults seen since reset */
+static uint32_t s_faultDiagCount = 0U;
+#endif
+
+/* Local functions */
+
+#ifdef SM_FAULT_DIAG
+static void FAULT_DiagPutChar(uint8_t ch);
+static void FAULT_DiagPutStr(const char *str);
+static void FAULT_DiagPutHex(uint32_t val);
+#endif
 
 /*--------------------------------------------------------------------------*/
 /* Initialize fault handling                                                */
@@ -112,11 +157,74 @@ int32_t DEV_SM_FaultComplete(dev_sm_rst_rec_t resetRec)
             BLK_CTRL_NOCMIX->INITIATOR_TIMEOUT = modResetRec.extInfo[0U];
         }
     }
+    else if ((modResetRec.errId >= SSI_PARITY_FAULT_FIRST)
+        && (modResetRec.errId <= SSI_PARITY_FAULT_LAST))
+    {
+        /*
+         * SSI parity faults give no HW context. Report the SM boot stage,
+         * the power domain of the last power transition, and the silicon
+         * version to allow the fault to be located.
+         */
+        modResetRec.extLen = 3U;
+        modResetRec.extInfo[0U] = g_bootStage;
+        modResetRec.extInfo[1U] = g_bootStageDomain;
+        modResetRec.extInfo[2U] = DEV_SM_SiVerGet();
+    }
     else
     {
         ; /* Intentionally empty */
     }
 
+#ifdef SM_FAULT_DIAG
+    /*
+     * Diagnostic mode: report the fault but do not apply the configured
+     * reaction. This allows the boot to continue so that all faults, and
+     * the boot stage at which they occur, can be observed. Runs in
+     * FCCU_INT0_IRQHandler context so the report is emitted with a polled
+     * direct register write rather than printf().
+     */
+    status = SM_ERR_SUCCESS;
+
+    if (s_faultDiagCount < FAULT_DIAG_MAX_REPORT)
+    {
+        s_faultDiagCount++;
+
+        FAULT_DiagPutStr("FCCU fault: errId=");
+        FAULT_DiagPutHex(modResetRec.errId);
+        FAULT_DiagPutStr(" stage=");
+        FAULT_DiagPutHex(g_bootStage);
+        FAULT_DiagPutStr(" pd=");
+        FAULT_DiagPutHex(g_bootStageDomain);
+        FAULT_DiagPutStr(" siVer=");
+        FAULT_DiagPutHex(DEV_SM_SiVerGet());
+        FAULT_DiagPutStr("\r\n");
+
+        if (s_faultDiagCount == FAULT_DIAG_MAX_REPORT)
+        {
+            FAULT_DiagPutStr(
+                "FCCU fault storm, further faults suppressed\r\n");
+
+            /* Storm detected, mask further FCCU interrupts */
+            NVIC_DisableIRQ(FCCU_INT0_IRQn);
+        }
+        else
+        {
+            /* Clear the fault and continue */
+            if (DEV_SM_FaultSet(0U, modResetRec.errId, false)
+                != SM_ERR_SUCCESS)
+            {
+                /* Fault could not be cleared, mask further FCCU interrupts
+                   to avoid an interrupt storm */
+                NVIC_DisableIRQ(FCCU_INT0_IRQn);
+            }
+        }
+    }
+    else
+    {
+        /* Reporting suppressed, ensure FCCU interrupts stay masked */
+        NVIC_DisableIRQ(FCCU_INT0_IRQn);
+    }
+#else
     /* Call handler */
     status = SM_FAULTCOMPLETE(modResetRec);
 
@@ -131,7 +239,7 @@ int32_t DEV_SM_FaultComplete(dev_sm_rst_rec_t resetRec)
            delayed recovery via clear with DEV_SM_FaultSet() */
         NVIC_DisableIRQ(FCCU_INT0_IRQn);
     }
-
+#endif
     /* Return status */
     return status;
 }
@@ -238,3 +346,66 @@ int32_t DEV_SM_FaultSet(uint32_t lmId, uint32_t faultId, bool set)
     return status;
 }
 
+
+#ifdef SM_FAULT_DIAG
+
+/*--------------------------------------------------------------------------*/
+/* Output a character using a bounded polled write                          */
+/*                                                                          */
+/* Runs in fault (IRQ) context. Writes the debug UART data register          */
+/* directly and gives up rather than blocking if the FIFO never drains.      */
+/*--------------------------------------------------------------------------*/
+static void FAULT_DiagPutChar(uint8_t ch)
+{
+    const board_uart_config_t *uartConfig = BOARD_GetDebugUart();
+
+    if (uartConfig->base != NULL)
+    {
+        uint32_t poll = FAULT_DIAG_UART_POLL;
+
+        /* Wait for room in the transmit FIFO */
+        while (((uartConfig->base->STAT & LPUART_STAT_TDRE_MASK) == 0U)
+            && (poll > 0U))
+        {
+            poll--;
+        }
+
+        if (poll > 0U)
+        {
+            uartConfig->base->DATA = (uint32_t) ch;
+        }
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+/* Output a string                                                          */
+/*--------------------------------------------------------------------------*/
+static void FAULT_DiagPutStr(const char *str)
+{
+    const char *ptr = str;
+
+    while (*ptr != '\0')
+    {
+        FAULT_DiagPutChar((uint8_t) *ptr);
+        ptr++;
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+/* Output a 32-bit value in hex                                             */
+/*--------------------------------------------------------------------------*/
+static void FAULT_DiagPutHex(uint32_t val)
+{
+    static const char s_hexDigit[] = "0123456789ABCDEF";
+
+    FAULT_DiagPutStr("0x");
+
+    for (uint32_t shift = 32U; shift > 0U; shift -= 4U)
+    {
+        uint32_t nibble = (val >> (shift - 4U)) & 0xFU;
+
+        FAULT_DiagPutChar((uint8_t) s_hexDigit[nibble]);
+    }
+}
+
+#endif

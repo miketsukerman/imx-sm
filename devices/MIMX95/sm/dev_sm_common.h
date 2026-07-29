@@ -82,6 +82,76 @@
 /** @} */
 
 /*!
+ * @name Rev A (A0/A1) quirk selection
+ *
+ * The SM applies a set of workarounds when running on Rev A (A0/A1) silicon.
+ * SM_REVA_QUIRKS allows these to be forced on/off at build time to bisect
+ * problems suspected to be caused by the Rev A code paths:
+ *
+ * - 0: never apply the Rev A quirks (always use the B0 code paths)
+ * - 1: apply the Rev A quirks based on the silicon revision (default)
+ * - 2: always apply the Rev A quirks (as if running on A0/A1)
+ */
+/** @{ */
+#ifndef SM_REVA_QUIRKS
+/*! Rev A quirk selection */
+#define SM_REVA_QUIRKS  1U
+#endif
+
+#if (SM_REVA_QUIRKS == 0U)
+/*! Check if the Rev A code paths should be used */
+#define DEV_SM_IS_REVA()  false
+#elif (SM_REVA_QUIRKS == 2U)
+/*! Check if the Rev A code paths should be used */
+#define DEV_SM_IS_REVA()  true
+#else
+/*! Check if the Rev A code paths should be used */
+#define DEV_SM_IS_REVA()  (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+#endif
+
+/*
+ * Selects the clock gate API used by DEV_SM_ClockEnable():
+ *
+ * - false (default): CLOCK_CgcSetEnable(), which orders the gate change
+ *   against the MIX SSI blocking state of the source MIX
+ * - true: CCM_CgcSetEnable(), which writes the CGC directly
+ *
+ * The default is false on all silicon revisions. No Rev A erratum requiring
+ * the direct CGC write has been identified, and the ordered path is the one
+ * validated on B0. SM_REVA_DIRECT_CGC selects the direct path on Rev A for
+ * bisecting clock-gate related faults.
+ */
+#ifdef SM_REVA_DIRECT_CGC
+/*! Check if the CGC registers should be written directly */
+#define DEV_SM_USE_DIRECT_CGC()  DEV_SM_IS_REVA()
+#else
+/*! Check if the CGC registers should be written directly */
+#define DEV_SM_USE_DIRECT_CGC()  false
+#endif
+/** @} */
+
+/*!
+ * @name Boot stages
+ *
+ * Records the progress of DEV_SM_Init(). Reported as extended info in the
+ * reset record for faults that occur during SM init.
+ */
+/** @{ */
+#define DEV_SM_BOOT_STAGE_START     0U   /*!< Before device init */
+#define DEV_SM_BOOT_STAGE_SYSTEM    1U   /*!< DEV_SM_SystemInit() */
+#define DEV_SM_BOOT_STAGE_FAULT     2U   /*!< DEV_SM_FaultInit() */
+#define DEV_SM_BOOT_STAGE_PERF      3U   /*!< DEV_SM_PerfInit() */
+#define DEV_SM_BOOT_STAGE_POWER     4U   /*!< DEV_SM_PowerInit() */
+#define DEV_SM_BOOT_STAGE_MEM       5U   /*!< DEV_SM_MemInit() */
+#define DEV_SM_BOOT_STAGE_CPU       6U   /*!< DEV_SM_CpuInit() */
+#define DEV_SM_BOOT_STAGE_SENSOR    7U   /*!< DEV_SM_SensorInit() */
+#define DEV_SM_BOOT_STAGE_RDC       8U   /*!< DEV_SM_RdcInit() */
+#define DEV_SM_BOOT_STAGE_PWRUP     9U   /*!< DEV_SM_PowerUpPost() loop */
+#define DEV_SM_BOOT_STAGE_BBM       10U  /*!< DEV_SM_BbmInit() */
+#define DEV_SM_BOOT_STAGE_DONE      11U  /*!< Device init complete */
+/** @} */
+
+/*!
  * @name Device init error flags
  */
 /** @{ */
@@ -114,6 +184,12 @@ typedef struct
 
 /*! Structure to hold the syslog */
 extern dev_sm_syslog_t g_syslog;
+
+/*! Current boot stage (see @ref DEV_SM_BOOT_STAGE_START) */
+extern uint32_t g_bootStage;
+
+/*! Power domain of the last power state transition requested */
+extern uint32_t g_bootStageDomain;
 
 /* Functions */
 

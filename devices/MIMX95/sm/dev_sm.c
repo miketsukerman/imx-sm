@@ -58,11 +58,13 @@ int32_t DEV_SM_Init(uint32_t bootPerfLevel, uint32_t runPerfLevel)
     const rom_passover_t *romPassover = NULL;
 
     /* Init the system */
+    g_bootStage = DEV_SM_BOOT_STAGE_SYSTEM;
     status = DEV_SM_SystemInit();
 
     /* Init fault handling */
     if (status == SM_ERR_SUCCESS)
     {
+        g_bootStage = DEV_SM_BOOT_STAGE_FAULT;
         status = DEV_SM_FaultInit();
     }
 
@@ -77,18 +79,21 @@ int32_t DEV_SM_Init(uint32_t bootPerfLevel, uint32_t runPerfLevel)
     /* Initialize performance domains */
     if (status == SM_ERR_SUCCESS)
     {
+        g_bootStage = DEV_SM_BOOT_STAGE_PERF;
         status = DEV_SM_PerfInit(bootPerfLevel, runPerfLevel);
     }
 
     /* Initialize power domains */
     if (status == SM_ERR_SUCCESS)
     {
+        g_bootStage = DEV_SM_BOOT_STAGE_POWER;
         status = DEV_SM_PowerInit();
     }
 
     /* Init the memory */
     if (status == SM_ERR_SUCCESS)
     {
+        g_bootStage = DEV_SM_BOOT_STAGE_MEM;
         status = DEV_SM_MemInit();
     }
 
@@ -109,12 +114,14 @@ int32_t DEV_SM_Init(uint32_t bootPerfLevel, uint32_t runPerfLevel)
     /* Initialize CPU domains */
     if (status == SM_ERR_SUCCESS)
     {
+        g_bootStage = DEV_SM_BOOT_STAGE_CPU;
         status = DEV_SM_CpuInit();
     }
 
     /* Initialize sensors */
     if (status == SM_ERR_SUCCESS)
     {
+        g_bootStage = DEV_SM_BOOT_STAGE_SENSOR;
         status = DEV_SM_SensorInit();
     }
 
@@ -128,6 +135,7 @@ int32_t DEV_SM_Init(uint32_t bootPerfLevel, uint32_t runPerfLevel)
     if (status == SM_ERR_SUCCESS)
     {
         /* Check if loaded by ROM, not ROM shim */
+        g_bootStage = DEV_SM_BOOT_STAGE_RDC;
         if (romPassover->bootDevType != DEV_SM_ROM_BD_PRELOAD)
         {
             status = DEV_SM_RdcInit();
@@ -144,10 +152,14 @@ int32_t DEV_SM_Init(uint32_t bootPerfLevel, uint32_t runPerfLevel)
     /* Loop over powered domains and load state (BLK_CTRL, RDC, etc.) */
     if (status == SM_ERR_SUCCESS)
     {
+        g_bootStage = DEV_SM_BOOT_STAGE_PWRUP;
         for (uint32_t domainId = 0U; domainId < DEV_SM_NUM_POWER;
             domainId++)
         {
             uint8_t powerState;
+
+            /* Record domain for fault diagnostics */
+            g_bootStageDomain = domainId;
 
             /* Get power state */
             status = DEV_SM_PowerStateGet(domainId, &powerState);
@@ -173,7 +185,14 @@ int32_t DEV_SM_Init(uint32_t bootPerfLevel, uint32_t runPerfLevel)
     /* Configure BBM */
     if (status == SM_ERR_SUCCESS)
     {
+        g_bootStage = DEV_SM_BOOT_STAGE_BBM;
         status = DEV_SM_BbmInit();
+    }
+
+    /* Mark init complete */
+    if (status == SM_ERR_SUCCESS)
+    {
+        g_bootStage = DEV_SM_BOOT_STAGE_DONE;
     }
 
     /* Return status */

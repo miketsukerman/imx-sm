@@ -430,15 +430,20 @@ int32_t DEV_SM_NocConfigLoad(void)
 {
     int32_t status;
     static const uint32_t s_configData[] = SM_NOC_CONFIG;
+#ifndef SM_SKIP_NOC_NIU_TIMEOUT
     static const uint32_t s_timeoutData[] =
     {
         SM_CFG_FN(0x000000c0U, 12U), 0x7U,
         SM_CFG_FN(0x000000c0U, 12U), 0x8007U,
         SM_CFG_END
     };
+#endif
 
-    /* Rev A does not support SMMU TBU/TCU SW control  */
-    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
+    /* TODO: unverified Rev A claim inherited from the Rev A silicon
+       support commit. Skipping SMMU TBU/TCU SW control on Rev A has
+       not been confirmed against the i.MX95 A0 reference manual or
+       errata. Behavior left unchanged pending verification. */
+    if (!DEV_SM_IS_REVA())
     {
         /* Deassert reset for WAKEUPMIX SMMU TBUs */
         SRC_XSPR_WAKEUPMIX->IRST_REQ_CTRL &=
@@ -475,12 +480,25 @@ int32_t DEV_SM_NocConfigLoad(void)
         status = CONFIG_Load(NULL, s_configData);
     }
 
-    /* Initialize the NIU timeout registers to maximum value. */
+#ifndef SM_SKIP_NOC_NIU_TIMEOUT
+    /*
+     * Initialize the NIU timeout registers to maximum value.
+     *
+     * This fills all 12 BLK_CTRL_NOCMIX NIU_TO_CTRL_* registers (offset
+     * 0xC0..0xEC), one per target MIX, with CLK_DIV_RATIO=7 and then pulses
+     * UPD. Several of those MIXes are unpowered at this point in SM init.
+     * Whether committing a timeout value toward an unpowered MIX can raise
+     * an SSI parity fault (::DEV_SM_FAULT_NOC_SSI, fault 66) is A0
+     * register-level behavior that is not derivable from this repository -
+     * see docs/nxp-escalation-fccu-fault-66.md. Set NOC_NIU_TIMEOUT=0 to
+     * skip these writes and test that hypothesis.
+     */
     if (status == SM_ERR_SUCCESS)
     {
         status = CONFIG_Load((const uint32_t*) BLK_CTRL_NOCMIX_BASE,
             s_timeoutData);
     }
+#endif
 
 #ifdef SM_NOC_CONFIG_FUNC
     /* Run device config function */
@@ -933,8 +951,11 @@ int32_t DEV_SM_NocPowerDownPre(void)
 {
     int32_t status = SM_ERR_SUCCESS;
 
-    /* Rev A does not support SMMU TBU/TCU SW control  */
-    if (DEV_SM_SiVerGet() >= DEV_SM_SIVER_B0)
+    /* TODO: unverified Rev A claim inherited from the Rev A silicon
+       support commit. Skipping SMMU TBU/TCU SW control on Rev A has
+       not been confirmed against the i.MX95 A0 reference manual or
+       errata. Behavior left unchanged pending verification. */
+    if (!DEV_SM_IS_REVA())
     {
         /* Quiesce WAKEUPMIX SMMU TBUs */
         CCM_CTRL->LPCG[CLOCK_LPCG_WAKEUPMIX_TBU].DIRECT &=

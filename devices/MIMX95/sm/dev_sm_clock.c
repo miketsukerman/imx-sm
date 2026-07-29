@@ -1056,8 +1056,9 @@ int32_t DEV_SM_ClockEnable(uint32_t clockId, bool enable)
                 /* gcov_excl_multiline 11 */
                 if (clockIndex < CLOCK_NUM_CGC)
                 {
-                    /* Skip MIX-level transaction blocking on Rev A  */
-                    if (DEV_SM_SiVerGet() < DEV_SM_SIVER_B0)
+                    /* Direct CGC writes are only used when explicitly
+                       requested (see SM_REVA_DIRECT_CGC) */
+                    if (DEV_SM_USE_DIRECT_CGC())
                     {
                         if (!CCM_CgcSetEnable(clockIndex, enable))
                         {

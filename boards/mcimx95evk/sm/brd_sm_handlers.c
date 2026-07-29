@@ -245,7 +245,7 @@ int32_t BRD_SM_SerialDevicesInit(void)
     /* Recover the I2C bus if a device is holding it stuck */
     BOARD_I2C_Recovery();
 
-#if 0
+#if BOARD_HAS_BUS_EXP
     pcal6408a_config_t pcal6408Config;
 
     /* Fill in PCAL6408A dev */
@@ -437,6 +437,11 @@ int32_t BRD_SM_SerialDevicesInit(void)
 int32_t BRD_SM_BusExpMaskSet(uint8_t val, uint8_t mask)
 {
     int32_t status = SM_ERR_SUCCESS;
+#if !BOARD_HAS_BUS_EXP
+    /* No bus expander, nothing to mask */
+    (void) val;
+    (void) mask;
+#else
     static uint8_t cachedMask = PCAL6408A_INITIAL_MASK;
     uint8_t newMask = (cachedMask & ~mask);
 
@@ -454,6 +459,7 @@ int32_t BRD_SM_BusExpMaskSet(uint8_t val, uint8_t mask)
             status = SM_ERR_HARDWARE_ERROR;
         }
     }
+#endif
 
     /* Return status */
     return status;
@@ -469,7 +475,7 @@ void GPIO1_0_IRQHandler(void)
     /* Get GPIO status */
     flags = RGPIO_GetPinsInterruptFlags(GPIO1, kRGPIO_InterruptOutput0);
 
-#if 0
+#if BOARD_HAS_BUS_EXP
     uint8_t status, val;
 
     /* Get PCAL6408A status */

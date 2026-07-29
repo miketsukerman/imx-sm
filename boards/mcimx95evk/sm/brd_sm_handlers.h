@@ -59,6 +59,17 @@
 
 /* Defines */
 
+/*!
+ * Board has a PCAL6408A bus expander.
+ *
+ * The AOM5521 does not route the PMIC/RTC interrupts via a bus expander, so
+ * the expander is not initialized. Set to 1 for boards (e.g. the i.MX95 EVK)
+ * that populate one.
+ */
+#ifndef BOARD_HAS_BUS_EXP
+#define BOARD_HAS_BUS_EXP  0
+#endif
+
 /*! Initial PCAL6408A interrupt mask */
 #define PCAL6408A_INITIAL_MASK  0xF7U
 
