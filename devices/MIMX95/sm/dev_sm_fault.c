@@ -74,7 +74,14 @@
  */
 #define FAULT_DIAG_MAX_REPORT       8U
 
-/* Bounded poll count waiting for room in the debug UART transmit FIFO */
+/*
+ * Bounded poll count waiting for room in the debug UART transmit FIFO. At
+ * the slowest supported M33 clock this is far longer than the time to shift
+ * out one character at 115200 baud, so it never truncates output on a
+ * working UART; its only purpose is to guarantee forward progress if the
+ * UART is unclocked or held in reset, since this runs in fault (IRQ)
+ * context where blocking forever would hide the fault entirely.
+ */
 #define FAULT_DIAG_UART_POLL        100000U
 #endif
 
