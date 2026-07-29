@@ -18,9 +18,15 @@ Reset request: reason=fccu, errId=66
   extInfo[2] = 0x00000001   DEV_SM_SiVerGet() = DEV_SM_SIVER_A1 (Rev A)
 ```
 
-The fault therefore fires inside the `DEV_SM_Init()` power-up loop, while
-powering up `DEV_SM_PD_NOC`, i.e. on the `DEV_SM_PowerUpPost()` →
-`DEV_SM_NocConfigLoad()` path. Silicon revision detection is correct.
+The fault therefore fires inside the `DEV_SM_Init()` power-up loop while the
+SM is servicing `DEV_SM_PD_NOC`. Note that NOC is **already powered** when the
+SM starts, so no SRC power transition takes place: the loop calls
+`DEV_SM_PowerStateGet()` and then `DEV_SM_PowerUpPost(19)` →
+`DEV_SM_NocConfigLoad()` directly. Silicon revision detection is correct.
+
+The reset loop is fully deterministic — DDR OEI and TCM OEI complete with
+`err = 0` on every iteration, and the SM then resets with the identical record
+before printing its banner.
 
 ## When it started
 
@@ -73,13 +79,21 @@ and domain where the fault is reported.
   real, previously hidden bus-integrity condition on A0, not a software
   regression.
 - **(B) Active generation.** The NIU-timeout writes added by the same commit
-  create the parity condition on A0.
+  create the parity condition on A0. Note what those writes do: `SM_CFG_FN(0xC0,
+  12)` fills all twelve `BLK_CTRL_NOCMIX` `NIU_TO_CTRL_*` registers (offsets
+  0xC0–0xEC, one per target MIX: WAKEUP, CORTEXA, GIC700, NPU, GPU, CAMERA,
+  DISPLAY_RT, NETC, MMU700, HSIO, DISPLAY_BE, VPU) with `CLK_DIV_RATIO = 7`,
+  then repeats the fill with `0x8007`, i.e. pulsing `UPD` (bit 15) to commit the
+  new ratio. Several of those target MIXes (NPU, GPU, CAMERA, DISPLAY, VPU,
+  NETC, HSIO) are unpowered at this point in SM init. Whether committing a
+  timeout ratio toward an unpowered MIX can raise an SSI parity error is A0
+  register-level behaviour we cannot determine from the source.
 
 ## Hypotheses already eliminated
 
 | Hypothesis | Result |
 |---|---|
-| MIX-level SSI transaction blocking skipped on Rev A in `DEV_SM_PowerStateSet()` | **Falsified.** The two Rev A support commits on the working and broken branches are functionally identical; both skip `PWR_MixSsiBlockingSet()` on Rev A, and the working firmware boots. Restoring the blocking on Rev A reproduced the fault with an identical signature. |
+| MIX-level SSI transaction blocking skipped on Rev A in `DEV_SM_PowerStateSet()` | **Falsified, and inapplicable by construction.** Restoring the blocking on Rev A reproduced the fault with an identical signature. Two code-level reasons it could never have mattered: (1) at boot stage 9 the `DEV_SM_Init()` loop calls only `DEV_SM_PowerStateGet()` and, for an already-on domain, `DEV_SM_PowerUpPost()` — `DEV_SM_PowerStateSet()` is not on the path, and NOC is already powered when the SM starts; (2) on i.MX95 `PWR_MixSsiBlockingSet()`/`PWR_MixSsiBlockingUpdate()` only act on `PWR_MIX_SLICE_IDX_GPU` and are no-ops for every other MIX including NOC. |
 | Board TRDC / BLK_CTRL configuration delta | **Falsified.** `config_trdc.h` and `config_bctrl.h` deltas are byte-identical between the working and broken board commits. |
 | Silicon revision misdetection | **Falsified.** `DEV_SM_SiVerGet()` reports Rev A correctly (`extInfo[2] = 1`). |
 
@@ -112,6 +126,12 @@ Branch `exp/fccu66-revert-niu-timeout`, based on `adv-lf-6.18.20-2.0.0`
 
 > **Result: PENDING** (depends on experiment 1).
 
+Experiment 2 is also available as a build option on
+`copilot/fix-fccu-fault-66-reset-loop` without switching branches:
+`make config=mx95evk NOC_NIU_TIMEOUT=0` compiles out the same
+`s_timeoutData`/`CONFIG_Load` hunk while leaving the FCCU enable word at
+`0x0000003F`.
+
 ## Diagnostics used
 
 Added locally on `copilot/fix-fccu-fault-66-reset-loop`, behind `SM_FAULT_DIAG`
@@ -137,6 +157,10 @@ Added locally on `copilot/fix-fccu-fault-66-reset-loop`, behind `SM_FAULT_DIAG`
    (`BLK_CTRL_NOCMIX + 0xC0`, 12 registers, values `0x7` then `0x8007`) valid on
    A0 silicon, and is the write ordering relative to NOC power-up / TRDC-N load
    correct there?
+   In particular: is it legal to pulse `NIU_TO_CTRL_<MIX>.UPD` for a MIX that is
+   currently powered down, or must those registers only be programmed for
+   powered MIXes (for example from the per-MIX `*ConfigLoad()` after that MIX is
+   powered up)?
 4. Was SM-378 validated on A0/A1 silicon, or on B0 only?
 
 ## Caveats

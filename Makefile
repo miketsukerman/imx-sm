@@ -92,6 +92,9 @@ endif
 ifeq ($(MASK_NOC_SSI),1)
 	FLAGS += -DSM_MASK_FAULT_NOC_SSI
 endif
+ifeq ($(NOC_NIU_TIMEOUT),0)
+	FLAGS += -DSM_SKIP_NOC_NIU_TIMEOUT
+endif
 ifeq ($(FAULT_DIAG),1)
 	FLAGS += -DSM_FAULT_DIAG
 endif
